@@ -1,12 +1,30 @@
-./basic_release $1 $2 $3 $4
+Usage
+=====
+./basic_release $1 $2
 $1 -- Project directory (e.g. ~/dev/project)
 $2 -- Version number (e.g. 1.0.2)
 
-Must first login to GitHub:
+Prerequisites
+=============
+Python Build
+------------
+`pip install build`
+or
+`mamba/conda install conda-forge::python-build`
+
+GitHub
+------
+Must first login with GitHub-CLI:
 First, install gh
 `mamba install gh --channel conda-forge`
 Then authenticate
 `gh auth login`
 
+PyPi
+----
 PyPi release requires proper configuration of twine
 https://packaging.python.org/en/latest/specifications/pypirc/
+
+Configuration Variables
+=======================
+You may put optional configuration variables in a release_config.sh file
