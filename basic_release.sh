@@ -3,6 +3,13 @@
 # Inputs
 # $1 -- Directory to release
 # $2 -- Version number
+
+if [ -z "${1+x}" ] && [ -z "${2+x}" ]
+then
+	echo "Usage: $0 <package_directory> <package_version>"
+	exit 1
+fi
+
 release_dir=$1
 version=$2
 cd $release_dir
@@ -13,6 +20,12 @@ if [ -x "./$config" ]
 then
 	. "./$config"
 fi
+
+# Generate news if requested
+#if [ -z "${NEWS+x}" ]
+#then
+	# Run news script
+#fi
 
 # GH_RELEASE_NOTES variable from release_config.sh file
 if [ -z "${GH_RELEASE_NOTES+x}" ]
@@ -25,19 +38,20 @@ fi
 # Build tar.gz for GitHub Release
 tmp_release_dir="tmp_release"
 mkdir "$tmp_release_dir"
-
 project_path="$(pwd)"
 project="${project_path##*/}"
 tgz_name="$project-$version.tar.gz"
 tar --exclude="./$tmp_release_dir" -zcf "./$tmp_release_dir/$tgz_name" . 
 
 # GitHub Release
+gh_title="-t $version"
 git tag $version $(git rev-parse HEAD)
 git push upstream $version
-gh release create "$version" "./$tmp_release_dir/$tgz_name" "$gh_notes"
+gh release create "$version" "./$tmp_release_dir/$tgz_name" "$gh_title" "$gh_notes"
 rm -rf $tmp_release_dir
 
 # PyPi Release
 python -m build
-twine upload -r testpypi dist/*.tar.gz
 twine upload dist/*.tar.gz
+
+exit 0
