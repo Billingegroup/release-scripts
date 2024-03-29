@@ -1,0 +1,12 @@
+./basic_release $1 $2 $3 $4
+$1 -- Project directory (e.g. ~/dev/project)
+$2 -- Version number (e.g. 1.0.2)
+
+Must first login to GitHub:
+First, install gh
+`mamba install gh --channel conda-forge`
+Then authenticate
+`gh auth login`
+
+PyPi release requires proper configuration of twine
+https://packaging.python.org/en/latest/specifications/pypirc/
