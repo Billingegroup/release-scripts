@@ -27,12 +27,19 @@ fi
 	# Run news script
 #fi
 
-# GH_RELEASE_NOTES variable from release_config.sh file
+# GH_RELEASE_* Variables from config file
 if [ -z "${GH_RELEASE_NOTES+x}" ]
 then
 	gh_notes="--generate-notes"
 else
 	gh_notes="-n $GH_RELEASE_NOTES"
+fi
+
+if [ -z "${GH_RELEASE_TITLE+x}" ]
+then
+	gh_title="-t $version"
+else
+	gh_notes="-t $GH_RELEASE_TITLE"
 fi
 
 # Build tar.gz for GitHub Release
@@ -44,7 +51,6 @@ tgz_name="$project-$version.tar.gz"
 tar --exclude="./$tmp_release_dir" -zcf "./$tmp_release_dir/$tgz_name" . 
 
 # GitHub Release
-gh_title="-t $version"
 git tag $version $(git rev-parse HEAD)
 git push upstream $version
 gh release create "$version" "./$tmp_release_dir/$tgz_name" "$gh_title" "$gh_notes"
@@ -52,6 +58,6 @@ rm -rf $tmp_release_dir
 
 # PyPi Release
 python -m build
-twine upload dist/*.tar.gz
+twine upload dist/*$version*.tar.gz || echo "Warning: No new distribution build. Check for any untracked changes."
 
 exit 0
