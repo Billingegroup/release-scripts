@@ -182,12 +182,14 @@ def create_snake_nest(opts, pargs):
     # Setup symbolic links in snake nest
     if sn_dir is not None:
         with open(sn_file, 'r') as snf:
-            for i, sym_link in enumerate(snf):
+            i = 0
+            for sym_link in snf:
                 if "python" not in sym_link:
                     continue
                 sym_link = os.path.abspath(sym_link).strip()
                 sym_name = os.path.join(sn_dir, f"python-{versions[i]}").strip()
                 subprocess.run(f"ln -s {sym_link} {sym_name}", shell=True)
+                i += 1
         subprocess.run(f"rm {sn_file}", shell=True)
 
 
