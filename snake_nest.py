@@ -9,6 +9,7 @@ import os
 
 import warnings
 
+
 def create_option_parser():
     prog_name_short = os.path.basename(sys.argv[0])  # Program name
     
@@ -93,12 +94,18 @@ This command will be run in each environment created.""",
 The user should input the path to the desired directory and the program will create that directory if it does not exist.
 A warning is thrown if there are existing files in the given directory and no snake nest will be generated.""",
     )
+    parser.add_option(
+        '--clean',
+        action="store_true",
+        dest="clean",
+        help="""Remove version environments.
+Environments removed are specified the same way as creating environments."""
+    )
 
     return parser
 
-if __name__ == "__main__":
-    parser = create_option_parser()
-    (opts, pargs) = parser.parse_args()
+ 
+def create_snake_nest(opts, pargs):
     if len(pargs) != 1:
         parser.error("Improper usage.")
     versions = list(map(str.strip, pargs[0].split(",")))
@@ -177,4 +184,40 @@ if __name__ == "__main__":
                 sym_name = os.path.join(sn_dir, f"python-{versions[i]}").strip()
                 subprocess.run(f"ln -s {sym_link} {sym_name}", shell=True)
         subprocess.run(f"rm {sn_file}", shell=True)
-            
+
+
+def cleanup(opts, pargs):
+    if len(pargs) != 1:
+        parser.error("Improper usage.")
+    versions = list(map(str.strip, pargs[0].split(",")))
+    
+    # Switch environment manager to mamba if chosen
+    env_manager = "conda"
+    if opts.mamba:
+        env_manager = "mamba"
+
+    # Find user-specified names to environments
+    prefix = "py-"
+    suffix = "-env"
+    if opts.prefix is not None:
+        prefix = opts.prefix
+    if opts.suffix is not None:
+        suffix = opts.suffix
+    def get_env_name(prefix, suffix, version):
+        return prefix + version + suffix
+    env_names = list(map(lambda v: get_env_name(prefix, suffix, v), versions))
+
+    # Delete environments
+    for i, env_name in enumerate(env_names):
+        subprocess.run(f"{env_manager} remove -n {env_name} --all", shell=True)
+
+
+if __name__ == "__main__":
+    parser = create_option_parser()
+    (opts, pargs) = parser.parse_args()
+
+    # Clean up (delete) environments
+    if opts.clean:
+        cleanup(opts, pargs)
+    else:
+        create_snake_nest(opts, pargs)
