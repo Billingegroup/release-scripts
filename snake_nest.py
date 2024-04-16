@@ -145,7 +145,9 @@ def create_snake_nest(opts, pargs):
 
     # Create snake-nest directory if it does not exist
     sn_dir = opts.sn_dir
-    sn_file = os.path.join(sn_dir, "sn_tmp_pyvers.txt")
+    sn_file = None
+    if sn_dir is not None:
+        sn_file = os.path.join(sn_dir, "sn_tmp_pyvers.txt")
     if sn_dir is not None:
         if os.path.exists(sn_dir):
             if len(os.listdir(sn_dir)) > 0:
