@@ -185,7 +185,7 @@ def create_snake_nest(opts, pargs):
             for i, sym_link in enumerate(snf):
                 sym_link = os.path.abspath(sym_link).strip()
                 sym_name = os.path.join(sn_dir, f"python-{versions[i]}").strip()
-                subprocess.run(f"{}ln -s {sym_link} {sym_name}", shell=True)
+                subprocess.run(f"ln -s {sym_link} {sym_name}", shell=True)
         subprocess.run(f"rm {sn_file}", shell=True)
 
 
