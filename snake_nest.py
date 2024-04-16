@@ -165,23 +165,19 @@ def create_snake_nest(opts, pargs):
         in_env_actions = True
     if in_env_actions:
         for i, env_name in enumerate(env_names):
-            subprocess.run(f"{env_manager} activate {env_name}", shell=True)
-            
             # Install pip requirements into each environment
             if opts.pip_reqs is not None or opts.dev_dir is not None:
                 vers_spec_preq = opts.pip_reqs
                 if opts.vreqs and vers_spec_preq is not None:
                     vers_spec_preq = vers_spec_preq.replace("[vsn]", versions[i])
                 if vers_spec_preq is not None:
-                    subprocess.run(f"pip install -r {vers_spec_preq}", shell=True)
+                    subprocess.run(f"{env_manager} run -n {env_names[i]} pip install -r {vers_spec_preq}", shell=True)
                 if opts.dev_dir is not None:
-                    subprocess.run(f"pip install -e {opts.dev_dir}", shell=True)
+                    subprocess.run(f"{env_manager} run -n {env_names[i]} pip install -e {opts.dev_dir}", shell=True)
             
             # Setup the snake nest
             if sn_dir is not None:
-                subprocess.run(f"which python >> {sn_file}", shell=True)
-        
-            subprocess.run(f"{env_manager} deactivate", shell=True)
+                subprocess.run(f"{env_manager} run -n {env_names[i]} which python >> {sn_file}", shell=True)
             
     # Setup symbolic links in snake nest
     if sn_dir is not None:
@@ -189,7 +185,7 @@ def create_snake_nest(opts, pargs):
             for i, sym_link in enumerate(snf):
                 sym_link = os.path.abspath(sym_link).strip()
                 sym_name = os.path.join(sn_dir, f"python-{versions[i]}").strip()
-                subprocess.run(f"ln -s {sym_link} {sym_name}", shell=True)
+                subprocess.run(f"{}ln -s {sym_link} {sym_name}", shell=True)
         subprocess.run(f"rm {sn_file}", shell=True)
 
 
@@ -242,11 +238,10 @@ def run_script(opts, pargs):
 
     # Perform operations specified by a file
     for i, env_name in enumerate(env_names):
-        subprocess.run(f"{env_manager} activate {env_name}", shell=True)
         with open(opts.script, 'r') as rf:
             for command in rf:
                 command = command.replace("[vsn]", versions[i])
-            subprocess.run(f"{command}", shell=True)
+            subprocess.run(f"{env_manager} run -n {env_names[i]} {command}", shell=True)
 
 
 if __name__ == "__main__":
