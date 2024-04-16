@@ -242,9 +242,11 @@ def run_script(opts, pargs):
 
     # Perform operations specified by a file
     for i, env_name in enumerate(env_names):
+        subprocess.run(f"{env_manager} activate {env_name}", shell=True)
         with open(opts.script, 'r') as rf:
             for command in rf:
                 command = command.replace("[vsn]", versions[i])
+            subprocess.run(f"{command}", shell=True)
 
 
 if __name__ == "__main__":
