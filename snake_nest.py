@@ -241,7 +241,7 @@ def run_script(opts, pargs):
         with open(opts.script, 'r') as rf:
             for command in rf:
                 command = command.replace("[vsn]", versions[i])
-            subprocess.run(f"{env_manager} run -n {env_names[i]} {command}", shell=True)
+                subprocess.run(f"{env_manager} run -n {env_names[i]} {command}", shell=True)
 
 
 if __name__ == "__main__":
