@@ -46,3 +46,6 @@ Options (taken from --help):
                         are existing files in the given directory and no snake nest will be generated.
 
   --clean               Remove version environments. Environments removed are specified the same way as creating environments.
+
+  --run-script          Run a script in each environment. The script file is user-specified. You can include [vsn] in the script and it will be replaced
+                        with the proper version number.

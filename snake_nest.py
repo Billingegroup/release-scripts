@@ -88,7 +88,7 @@ This command will be run in each environment created.""",
     parser.add_option(
         '--nest',
         '--make-snake-nest',
-        metavar="NEST-DIR",
+        metavar="NESTDIR",
         dest="sn_dir",
         help="""Create a snake nest (a directory containing symbolic links to each version-specific Python executable.)
 The user should input the path to the desired directory and the program will create that directory if it does not exist.
@@ -100,6 +100,13 @@ A warning is thrown if there are existing files in the given directory and no sn
         dest="clean",
         help="""Remove version environments.
 Environments removed are specified the same way as creating environments."""
+    )
+    parser.add_option(
+        '--run-script',
+        metavar="SCRIPTFILE",
+        dest="script",
+        help="""Run a script in each environment. The script file is user-specified.
+You can include [vsn] in the script and it will be replaced with the proper version number."""
     )
 
     return parser
@@ -196,7 +203,7 @@ def cleanup(opts, pargs):
     if opts.mamba:
         env_manager = "mamba"
 
-    # Find user-specified names to environments
+    # Find environments
     prefix = "py-"
     suffix = "-env"
     if opts.prefix is not None:
@@ -212,6 +219,34 @@ def cleanup(opts, pargs):
         subprocess.run(f"{env_manager} remove -n {env_name} --all", shell=True)
 
 
+def run_script(opts, pargs):
+    if len(pargs) != 1:
+        parser.error("Improper usage.")
+    versions = list(map(str.strip, pargs[0].split(",")))
+    
+    # Switch environment manager to mamba if chosen
+    env_manager = "conda"
+    if opts.mamba:
+        env_manager = "mamba"
+
+    # Find environments
+    prefix = "py-"
+    suffix = "-env"
+    if opts.prefix is not None:
+        prefix = opts.prefix
+    if opts.suffix is not None:
+        suffix = opts.suffix
+    def get_env_name(prefix, suffix, version):
+        return prefix + version + suffix
+    env_names = list(map(lambda v: get_env_name(prefix, suffix, v), versions))
+
+    # Perform operations specified by a file
+    for i, env_name in enumerate(env_names):
+        with open(opts.script, 'r') as rf:
+            for command in rf:
+                command = command.replace("[vsn]", versions[i])
+
+
 if __name__ == "__main__":
     parser = create_option_parser()
     (opts, pargs) = parser.parse_args()
@@ -219,5 +254,8 @@ if __name__ == "__main__":
     # Clean up (delete) environments
     if opts.clean:
         cleanup(opts, pargs)
+    # Run a script in each environment
+    elif opts.script is not None:
+        run_script(opts, pargs)
     else:
         create_snake_nest(opts, pargs)
