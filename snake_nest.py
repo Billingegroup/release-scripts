@@ -79,9 +79,9 @@ It is recommended to install through conda/mamba unless the packages are availab
     parser.add_option(
         '-d',
         '--dev-mode',
-        action="store_true",
-        dest="dev_mode",
-        help="""Install the current directory in developer mode (pip install -e .).
+        metavar="DEVDIR",
+        dest="dev_dir",
+        help="""Install the specified directory in developer mode (pip install -e DEVDIR).
 This command will be run in each environment created.""",
     )
     parser.add_option(
@@ -147,21 +147,21 @@ if __name__ == "__main__":
 
     # Operations to be done within each environment
     in_env_actions = False
-    if opts.dev_mode or opts.pip_reqs is not None or sn_dir is not None:
+    if opts.dev_dir is not None or opts.pip_reqs is not None or sn_dir is not None:
         in_env_actions = True
     if in_env_actions:
         for i, env_name in enumerate(env_names):
             subprocess.run(f"{env_manager} activate {env_name}", shell=True)
             
             # Install pip requirements into each environment
-            if opts.pip_reqs is not None or opts.dev_mode:
+            if opts.pip_reqs is not None or opts.dev_dir is not None:
                 vers_spec_preq = opts.pip_reqs
                 if opts.vreqs and vers_spec_preq is not None:
                     vers_spec_preq = vers_spec_preq.replace("[vsn]", versions[i])
                 if vers_spec_preq is not None:
-                    subprocess.run(f"pip install -r {vers_spec_preq} --yes", shell=True)
-                if opts.dev_mode:
-                    subprocess.run(f"pip install -e . --yes", shell=True)
+                    subprocess.run(f"pip install -r {vers_spec_preq}", shell=True)
+                if opts.dev_dir is not None:
+                    subprocess.run(f"pip install -e {opts.dev_dir}", shell=True)
             
             # Setup the snake nest
             if sn_dir is not None:
