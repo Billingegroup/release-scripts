@@ -1,0 +1,51 @@
+USAGE
+=====
+Usage: python snake_nest <list_of_python_versions> OPTIONS
+For example: python snake_nest "3.10, 3.11, 3.12" OPTIONS
+Run using shell: ./snake_nest.py <list_of_python_versions> OPTIONS
+
+DESCRIPTION
+===========
+This program creates a set of conda environments corresponding to user-inputted python versions. These environments can be used for version-specific testing.
+$ python snake_nest "3.10, 3.11, 3.12"
+Result: creates three conda environments `py-3.10-env`, `py-3.11-env`, `py-3.12-env`.
+The prefix and suffix of the environment names can be specified using `-p` and `-s`: `<prefix><vesion><suffix>`.
+You can point to a directory of conda-installable requirements using `-r` and pip-installable requirements using `--pip-requirements`.
+Delete these environments using the `--clean` command.
+This program can generate a snake nest (directory containing symbolic links to the python executables for each environment) using `--nest`.
+
+OPTIONS
+=======
+Options (taken from --help):
+  -m, --mamba           Use mamba instead of conda. Without this option enabled, conda will be used.
+
+  -p PREFIX, --prefix=PREFIX
+                        Set the environment name prefix. Environments will be named <prefix><version><suffix>. The default prefix is "py-".
+
+  -s SUFFIX, --suffix=SUFFIX
+                        Set the environment name suffix. Environments will be named <prefix><version><suffix>. The default suffix is "-env".
+
+  --vreqs               Indicate that the requirements to be installed are version-specific. This changes the behavior of the inputs for 
+                        --requirements and --pip-requirements. Each now takes in an expression of the form "<prefix>[vsn]<suffix>". The program will
+                        replace "[vsn]" with a version number (e.g. 3.10). For example, the input "reqs/py-[vsn]-reqs.txt" corresponds to files like
+                        "reqs/py-3.10-reqs.txt".
+
+  -r REQFILE, --requirements=REQFILE
+                        A file containing requirements to install in each environment. These requirements must be installable through conda/mamba.
+
+  --pip-requirements=PREQFILE
+                        A file containing requirements to install in each environment. These requirements must be installable through pip. It is
+                        recommended to install through conda/mamba unless the packages are available only on PyPi.
+
+  -d DEVDIR, --dev-mode=DEVDIR
+                        Install the specified directory in developer mode (pip install -e DEVDIR). This command will be run in each environment created.
+
+  --nest=NEST-DIR, --make-snake-nest=NEST-DIR
+                        Create a snake nest (a directory containing symbolic links to each version-specific Python executable.) The user should input
+                        the path to the desired directory and the program will create that directory if it does not exist. A warning is thrown if there
+                        are existing files in the given directory and no snake nest will be generated.
+
+  --clean               Remove version environments. Environments removed are specified the same way as creating environments.
+
+  --run-script          Run a script in each environment. The script file is user-specified. You can include [vsn] in the script and it will be replaced
+                        with the proper version number.
