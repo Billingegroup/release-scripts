@@ -17,7 +17,7 @@ This program can generate a snake nest (directory containing symbolic links to t
 OPTIONS
 =======
 Options (taken from --help):
-  -m, --mamba           Use mamba instead of conda. Without this optiob enabled, conda will be used.
+  -m, --mamba           Use mamba instead of conda. Without this option enabled, conda will be used.
 
   -p PREFIX, --prefix=PREFIX
                         Set the environment name prefix. Environments will be named <prefix><version><suffix>. The default prefix is "py-".
