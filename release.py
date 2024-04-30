@@ -115,6 +115,13 @@ def create_option_parser():
     parser.add_option_group(rel_group)
     
     rel_group.add_option(
+        "--release",
+        action="store_true",
+        dest="release",
+        help="Update the changelog, push the tag, upload to Github, and upload to PyPi."
+    )
+    
+    rel_group.add_option(
         "--github",
         action="store_true",
         dest="github",
@@ -345,6 +352,11 @@ if __name__ == "__main__":
     pargs[0] = Path(pargs[0]).resolve()
     
     # Actions
+    if opts.release:
+        opts.changelog = True
+        opts.tag = True
+        opt.github = True
+        opt.pypi = True
     if opts.changelog:
         update_changelog(opts, pargs)
     if opts.tag:
