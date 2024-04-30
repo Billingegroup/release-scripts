@@ -19,10 +19,17 @@ First, install gh
 `mamba install gh --channel conda-forge`
 Then authenticate
 `gh auth login`
+Easy choices for login:
+? What account do you want to log into? GitHub.com
+? What is your preferred protocol for Git operations on this host? HTTPS
+? How would you like to authenticate GitHub CLI? Login with a web browser
+Then open the link `https://github.com/login/device` and enter the one-time code
 
 PyPi
 ----
-PyPi release requires proper configuration of twine
+First install twine
+`pip install twine`
+and then configure the pypirc file
 https://packaging.python.org/en/latest/specifications/pypirc/
 
 Configuration Variables
