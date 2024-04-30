@@ -5,7 +5,14 @@ import subprocess
 
 import optparse
 import sys
+import shlex
 from pathlib import Path
+
+gh_release_notes = None
+
+def call(cmd, cwd):
+    cmd_list = shlex.split(cmd)
+    subprocess.run(cmd_list, cwd=cwd)
 
 def create_option_parser():
     prog_name_short = Path(sys.argv[0]).name  # Program name
@@ -35,6 +42,8 @@ def create_option_parser():
     
     vsn_group.add_option(
         "--version-bump",
+        metavar="VBREGEX",
+        dest="vb_regex"
     )
     
     vsn_group.add_option(
@@ -46,23 +55,23 @@ def create_option_parser():
     
     vsn_group.add_option(
         "--cl-file",
-        metavar="FILENAME",
+        metavar="FILEPATH",
         dest="cl_file",
-        help="Name of changelog file."
+        help="Name (and path if not in root) of changelog file. Default \'CHANGELOG.rst\'"
     )
     
     vsn_group.add_option(
         "--cl-news",
         metavar="NEWSDIR",
         dest="cl_news",
-        help="Location of news directory."
+        help="Location of news directory. Default is \'news\' in the root directory."
     )
     
     vsn_group.add_option(
         "--cl-template",
         metavar="TEMPLATE",
         dest="cl_template",
-        help="Name of template file. One will be auto-generated if one does not exist."
+        help="Name of template file. One will be auto-generated if one does not exist. Default \'TEMPLATE.rst\'."
     )
     
     vsn_group.add_option(
@@ -93,12 +102,26 @@ def create_option_parser():
         help="Create and push a version tag to GitHub."
     )
     
+    vsn_group.add_option(
+        "--upstream",
+        action="store_true",
+        dest="upstream",
+        help="Push to upstream rather than origin."
+    )
+    
     rel_group = optparse.OptionGroup(
         parser,
         "Release Targets",
         "Make sure you have bumped the version, updated the changelog, and pushed the tag."
     )
     parser.add_option_group(rel_group)
+    
+    rel_group.add_option(
+        "--release",
+        action="store_true",
+        dest="release",
+        help="Update the changelog, push the tag, upload to Github, and upload to PyPi."
+    )
     
     rel_group.add_option(
         "--github",
@@ -156,7 +179,7 @@ def update_changelog(opts, pargs):
         news = opts.cl_news
     news = release_dir / news
     if not news.exists():
-        subprocess.run(f"mkdir {news.name}", shell=True, check=True)
+        call(f"mkdir {news.name}", release_dir)
     
     # Files to ignore
     ignore = []
@@ -182,7 +205,7 @@ def update_changelog(opts, pargs):
     if opts.cl_file is not None:
         changelog = opts.cl_file
     ignore.append(changelog)
-    changelog = news / changelog
+    changelog = (release_dir / changelog).resolve()
     if not changelog.exists():
         with open(changelog, 'w') as cf:
             generated_changelog = "=============\nRelease Notes\n=============\n\n.. current developments\n"
@@ -197,13 +220,13 @@ def update_changelog(opts, pargs):
         with open(change_file, 'r') as cf:
             for row in cf:
                 # New key
-                rx = re.search("\*\*(.+):\*\*", row)
+                rx = re.search(r"\*\*(.+):\*\*", row)
                 if rx:
                     key = rx.group(1)
                     continue
                     
                 # New entry
-                if key is not None and row.strip() != "":
+                if key is not None and "<news item>" not in row and row.strip() != "":
                     changes[key].append(row) 
     
     # Write to changelog
@@ -217,9 +240,10 @@ def update_changelog(opts, pargs):
             sep += "="
         generated_update = f"{version}\n{sep}\n"
         for key in changes.keys():
-            generated_update += f"\n**{key}:**\n"
-            key_updates = "".join(changes[key])
-            generated_update += f"\n{key_updates}"
+            if len(changes[key]) > 0:
+                generated_update += f"\n**{key}:**\n"
+                key_updates = "".join(changes[key])
+                generated_update += f"\n{key_updates}"
         
         # Write update after access point
         line = cf.readline()
@@ -240,6 +264,10 @@ def update_changelog(opts, pargs):
         cf.seek(ptr)
         cf.write(f"\n{generated_update}{spc}")
         cf.write(f"{prev_updates}")
+        
+        # Set Github release notes
+        global gh_release_notes
+        gh_release_notes = generated_update[len(f"{version}\n{sep}\n"):]
             
     # Remove used files
     for change_file in news.iterdir():
@@ -248,11 +276,15 @@ def update_changelog(opts, pargs):
         change_file.unlink()
 
 def push_tag(opts, pargs):
+    release_dir = pargs[0]
     version = pargs[1]
     
-    # Create and push tag to upstream (must have upstream access)
-    subprocess.run(f"git tag {version}", shell=True, check=True)
-    subprocess.run(f"git push upstream {version}", shell=True, check=True)
+    # Create and push tag to origin (must have origin release access)
+    call(f"git tag {version}", release_dir)
+    if opts.upstream is not None:
+        call(f"git push upstream {version}", release_dir)
+    else:
+        call(f"git push origin {version}", release_dir)
 
 # TODO: Implement environment and permissions checks
 def check():
@@ -266,15 +298,17 @@ def github_release(opts, pargs):
     tmp_dir = "release_tmp"
     while (Path(release_dir) / tmp_dir).exists():
         tmp_dir += "_prime"
-    subprocess.run(f"mkdir {tmp_dir}", shell=True, check=True)
+    call(f"mkdir {tmp_dir}", release_dir)
     
     # Build tar
     project = Path(release_dir).name
     tgz_name = f"{project}-{version}.tar.gz"
-    subprocess.run(f"tar --exclude=\"./{tmp_dir}\" -zcf \"./{tmp_dir}/{tgz_name}\" . ", shell=True, check=True)
+    call(f"tar --exclude=\"./{tmp_dir}\" -zcf \"./{tmp_dir}/{tgz_name}\" . ", release_dir)
     
     # Set notes and title if user has not provided any
-    gh_notes = "generate_notes"
+    gh_notes = "--generate-notes"
+    if gh_release_notes is not None and gh_release_notes.strip() != "":
+        gh_notes = f"-n {gh_release_notes}"
     if opts.gh_notes is not None:
         gh_notes = f"-n {opts.gh_notes}"
     gh_title = f"-t {version}"
@@ -282,20 +316,33 @@ def github_release(opts, pargs):
         gh_title = f"-t {opts.gh_title}"
     
     # Release through gh
-    subprocess.run(f"gh release create \"{version}\" \"./{tmp_dir}/{tgz_name}\" \"{gh_title}\" \"{gh_notes}\"", shell=True, check=True)
+    call(f"gh release create \"{version}\" \"./{tmp_dir}/{tgz_name}\" \"{gh_title}\" \"{gh_notes}\"", release_dir)
     
     # Cleanup
-    subprocess.run(f"rm -rf {tmp_dir}", shell=True, check=True)
+    call(f"rm -rf {tmp_dir}", release_dir)
         
 def pypi_release(opts, pargs):
+    release_dir = pargs[0]
     version = pargs[1]
 
     # Build distribution (build will fail if there have been no changes since the previous version)
-    subprocess.run("python -m build", shell=True, check=True)
+    call("python -m build", release_dir)
     
     # Upload using twine
-    subprocess.run(f"twine upload dist/*{version}*.tar.gz || echo \"Warning: No new distribution build. Check for any untracked changes.\"", shell=True, check=True)
-
+    no_tar = True
+    no_whl = True
+    for file in list((release_dir / "dist").iterdir()):
+        if re.search(f".*{version}.*.tar.gz", file.name):
+            no_tar = False
+        if re.search(f".*{version}.*.whl", file.name):
+            no_whl = False
+    if no_tar:
+        call(f"echo \"Warning: No new distribution build. Check for any untracked changes.\"", release_dir)
+    elif no_whl:
+        call(f"echo \"Warning: No wheel found.\"", release_dir)
+    else:
+        call(f"twine upload dist/*{version}*.tar.gz dist/*{version}*.whl", release_dir)
+    
 # TODO: Implement anaconda release (push to feedstock)
 def conda_release(opts, pargs):
     pass
@@ -309,11 +356,15 @@ if __name__ == "__main__":
     if len(pargs) > 2:
         parser.error("Improper usage. Too many arguments!")
     
-    # Go to release directory
+    # Set release directory to absolute path
     pargs[0] = Path(pargs[0]).resolve()
-    subprocess.run(f"cd {pargs[0]}", shell=True, check=True)
     
     # Actions
+    if opts.release:
+        opts.changelog = True
+        opts.tag = True
+        opts.github = True
+        opts.pypi = True
     if opts.changelog:
         update_changelog(opts, pargs)
     if opts.tag:
