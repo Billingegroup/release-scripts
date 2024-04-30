@@ -8,6 +8,8 @@ import sys
 import shlex
 from pathlib import Path
 
+gh_release_notes = None
+
 def call(cmd, cwd):
     cmd_list = shlex.split(cmd)
     subprocess.run(cmd_list, cwd=cwd)
@@ -262,6 +264,10 @@ def update_changelog(opts, pargs):
         cf.seek(ptr)
         cf.write(f"\n{generated_update}{spc}")
         cf.write(f"{prev_updates}")
+        
+        # Set Github release notes
+        global gh_release_notes
+        gh_release_notes = generated_update[len(f"{version}\n{sep}\n"):]
             
     # Remove used files
     for change_file in news.iterdir():
@@ -301,6 +307,8 @@ def github_release(opts, pargs):
     
     # Set notes and title if user has not provided any
     gh_notes = "--generate-notes"
+    if gh_release_notes is not None and gh_release_notes.strip() != "":
+        gh_notes = f"-n {gh_release_notes}"
     if opts.gh_notes is not None:
         gh_notes = f"-n {opts.gh_notes}"
     gh_title = f"-t {version}"
@@ -355,8 +363,8 @@ if __name__ == "__main__":
     if opts.release:
         opts.changelog = True
         opts.tag = True
-        opt.github = True
-        opt.pypi = True
+        opts.github = True
+        opts.pypi = True
     if opts.changelog:
         update_changelog(opts, pargs)
     if opts.tag:
