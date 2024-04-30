@@ -22,7 +22,9 @@ Then authenticate
 
 PyPi
 ----
-PyPi release requires proper configuration of twine
+Requires twine
+`pip install twine`
+PyPi release requires proper configuration of twine pypirc file
 https://packaging.python.org/en/latest/specifications/pypirc/
 
 Configuration Variables
