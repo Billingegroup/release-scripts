@@ -27,7 +27,7 @@ Then open the link `https://github.com/login/device` and enter the one-time code
 
 PyPi
 ----
-First pip install 
+First install twine
 `pip install twine`
 and then configure the pypirc file
 https://packaging.python.org/en/latest/specifications/pypirc/
