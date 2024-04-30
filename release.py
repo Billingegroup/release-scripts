@@ -10,9 +10,9 @@ from pathlib import Path
 
 gh_release_notes = None
 
-def call(cmd, cwd):
+def call(cmd, cwd, capture_output=False):
     cmd_list = shlex.split(cmd)
-    subprocess.run(cmd_list, cwd=cwd)
+    return subprocess.run(cmd_list, cwd=cwd, capture_output=capture_output, text=True)
 
 def create_option_parser():
     prog_name_short = Path(sys.argv[0]).name  # Program name
@@ -168,16 +168,24 @@ def update_changelog(opts, pargs):
     release_dir = pargs[0]
     version = pargs[1]
     
+    # Get name of default branch
+    remote = "origin"
+    if opts.upstream:
+        remote = "upstream"
+    remote_listing = call(f"git remote show {remote}", release_dir, capture_output=True).stdout
+    head_name = re.search("HEAD branch.*: (.+)", remote_listing).group(1)
+    call(f"git checkout {head_name}", release_dir)
+    
     # Categories of changes
     categories = ['Added', 'Changed', 'Deprecated', 'Removed', 'Fixed', 'Security']
     if opts.cl_categories is not None:
         categories = list(map(str.strip, opts.cl_categories.split(',')))
-    
+
     # Find news directory
     news = "news"
     if opts.cl_news is not None:
         news = opts.cl_news
-    news = release_dir / news
+    news = (release_dir / news).resolve()
     if not news.exists():
         call(f"mkdir {news.name}", release_dir)
     
@@ -191,7 +199,7 @@ def update_changelog(opts, pargs):
     if opts.cl_template is not None:
         template = opts.cl_template
     ignore.append(template)
-    template = news / template
+    template = (news / template).resolve()
     
     # Generate template if one does not exist
     if not template.exists():
@@ -253,7 +261,7 @@ def update_changelog(opts, pargs):
             if line.strip() == access_point:
                 break
             line = cf.readline()
-        
+
         # Spacing
         cf.seek(ptr)
         spc = ""
@@ -274,6 +282,11 @@ def update_changelog(opts, pargs):
         if change_file.name in ignore:
             continue
         change_file.unlink()
+        
+    # Push changes to GitHub
+    call(f"git add {news} {changelog}", release_dir)
+    call(f"git commit -m \"Update {changelog.name}\" --no-verify", release_dir)
+    call(f"git push {remote} {head_name}", release_dir)
 
 def push_tag(opts, pargs):
     release_dir = pargs[0]
