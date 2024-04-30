@@ -226,7 +226,6 @@ def update_changelog(opts, pargs):
         ptr = cf.tell()
         while line:
             ptr = cf.tell()
-            print(ptr)
             if line.strip() == access_point:
                 break
             line = cf.readline()
@@ -238,7 +237,6 @@ def update_changelog(opts, pargs):
         if prev_updates.strip() != "":
             cf.seek(ptr)
             spc = "\n\n"
-            print("Has updates")
         cf.seek(ptr)
         cf.write(f"\n{generated_update}{spc}")
         cf.write(f"{prev_updates}")
