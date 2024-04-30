@@ -217,7 +217,7 @@ def update_changelog(opts, pargs):
                     continue
                     
                 # New entry
-                if key is not None and row.strip() != "":
+                if key is not None and "<news item>" not in row and row.strip() != "":
                     changes[key].append(row) 
     
     # Write to changelog
