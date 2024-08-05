@@ -8,6 +8,10 @@ import sys
 import shlex
 from pathlib import Path
 
+import warnings
+import requests
+from hashlib import sha256
+
 gh_release_notes = None
 
 def call(cmd, cwd, capture_output=False):
@@ -152,10 +156,10 @@ def create_option_parser():
     )
     
     rel_group.add_option(
-        "--conda-forge",
-        action="store_true",
+        "--cf-hash",
+        metavar="HASHFILE",
         dest="forge",
-        help="Initiate a release on Conda-Forge."
+        help="Generate the SHA256 Hash for a conda-forge release in HASHFILE."
     )
     
     return parser
@@ -356,9 +360,50 @@ def pypi_release(opts, pargs):
     else:
         call(f"twine upload dist/*{version}*.tar.gz dist/*{version}*.whl", release_dir)
     
-# TODO: Implement anaconda release (push to feedstock)
-def conda_release(opts, pargs):
-    pass
+# Generate SHA256 Hash for a Conda-Forge Release
+def cf_hash(opts, pargs):
+    version = pargs[1]
+
+    # Get package name and convert to pep standard
+    module_name = input("Name of package being released: ")
+    pep_name = module_name.replace(".", "_").replace("-", "_").lower()
+
+    # Decide what source to pull from
+    sources = ["pypi", "github"]
+    source_message = ""
+    for i, source in enumerate(sources):
+        source_message += f"[{i+1}] {source}\n"
+    source_message += "Choose a distribution source (name or number): "
+    dist_source = ""
+    while dist_source.lower() not in sources and dist_source not in [str(i) for i in range(1, len(sources)+1)]:
+        dist_source = input(source_message)
+
+    # Get the download link for the .tar.gz
+    source_url = ""
+    if dist_source == "1" or dist_source == "pypi":
+        source_url = f"https://pypi.io/packages/source/{pep_name[0]}/{pep_name}/{pep_name}-{version}.tar.gz"
+        dist_source = "PyPi"
+    if dist_source == "2" or dist_source == "github":
+        github_org = input(f"What organization/user's version of {module_name} are you looking for: ")
+        source_url = f"https://github.com/{github_org}/{module_name}/archive/{version}.tar.gz"
+        dist_source = "GitHub"
+    tar_gz_dist = requests.get(source_url)
+
+    # Hash and ensure hash is not of an empty file
+    sha256_hash = sha256(tar_gz_dist.content).hexdigest().strip()
+    if (
+            sha256_hash == "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+            or sha256_hash == "0019dfc4b32d63c1392aa264aed2253c1e0c2fb09216f8e2cc269bbfb8bb49b5"
+            or sha256_hash == "d5558cd419c8d46bdc958064cb97f963d1ea793866414c025906ec15033512ed"
+        ):
+        warnings.warn("SHA256 Hash Returned Emtpy File Hash. "
+            f"Make sure your .tar.gz is uploaded to {dist_source}!")
+
+    # Print hash and source to a file
+    with open(opts.forge, 'w') as hash_dump:
+        hash_dump.write(f"Distribution downloaded from: {source_url}\nSHA256: {sha256_hash}\n")
+    print(f"SHA256 Hash written to file: {opts.forge}")
+
 
 if __name__ == "__main__":
     parser = create_option_parser()
@@ -386,3 +431,5 @@ if __name__ == "__main__":
         github_release(opts, pargs)
     if opts.pypi:
         pypi_release(opts, pargs)
+    if opts.forge is not None:
+        cf_hash(opts, pargs)
