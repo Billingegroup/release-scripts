@@ -1,18 +1,11 @@
-# Use the official Python image with a specified version
-ARG PYTHON_VERSION=3.10
-FROM mcr.microsoft.com/windows/python:${PYTHON_VERSION}
+# Dockerfile.windows
+ARG PYTHON_VERSION
+FROM python:$PYTHON_VERSION
 
-# Set the working directory
 WORKDIR /app
+COPY . /app
 
-# Install necessary dependencies
-RUN pip install --upgrade pip setuptools wheel twine
+RUN pip install --upgrade pip
+RUN pip install build twine
 
-# Copy your package source code into the container
-COPY ./ /app/
-
-# Build the packages
-RUN FOR /D %d IN (package*) DO python -m build %d
-
-# Default command to keep the container running
-CMD ["powershell", "-NoLogo", "-Command", "Start-Sleep -Seconds 999999"]
+CMD ["powershell"]

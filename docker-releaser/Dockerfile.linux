@@ -1,18 +1,11 @@
-# Use the official Python image with a specified version
-ARG PYTHON_VERSION=3.10
-FROM python:${PYTHON_VERSION}-slim
+# Dockerfile.linux
+ARG PYTHON_VERSION
+FROM python:$PYTHON_VERSION
 
-# Set the working directory
 WORKDIR /app
+COPY . /app
 
-# Install necessary dependencies
-RUN pip install --upgrade pip setuptools wheel twine
+RUN pip install --upgrade pip
+RUN pip install build twine
 
-# Copy your package source code into the container
-COPY ./ /app/
-
-# Build the packages
-RUN find /app -maxdepth 1 -type d -name 'package*' -exec python -m build {} \;
-
-# Default command to keep the container running
-CMD ["tail", "-f", "/dev/null"]
+CMD ["bash"]
