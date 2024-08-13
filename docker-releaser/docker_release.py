@@ -26,7 +26,7 @@ def generate_versions(min_version, max_version):
     return list(range(min_minor, max_minor + 1))
 
 
-def build_and_release(package_name, valid_versions, os_type, upload, package_path):
+def build_and_release(package_name, valid_versions, os_type, upload, package_path, version_number=None):
     if not os.path.exists(package_path):
         print(f"Error: The provided path '{package_path}' does not exist.")
         sys.exit(1)
@@ -51,13 +51,14 @@ def build_and_release(package_name, valid_versions, os_type, upload, package_pat
                 python -m build
                 """
             ]
-            docker_upload_command = ["twine upload dist/* --username $TWINE_USERNAME --password $TWINE_PASSWORD"]
             subprocess.run(docker_exec_command, check=True)
             print("Build complete!")
             
             if upload:
                 print(f'Uploading {package_name} for Python {version} on macOS...')
-                subprocess.run(docker_upload_command, check=True)
+                subprocess.run([
+                    "../basic_release.sh", package_path, version_number
+                ], check=True)
                 print("Upload complete!")
     else:
         dockerfile = f"Dockerfile.{os_type.lower()}"
@@ -72,30 +73,26 @@ def build_and_release(package_name, valid_versions, os_type, upload, package_pat
                 "-f", dockerfile, package_path
             ]
             subprocess.run(docker_build_command, check=True)
-            
-            # Run upload commands
+
             if upload:
                 print(f'Uploading {package_name} for Python {version} on {os_type}...')
-                docker_run_command = [
-                    "docker", "run", "-it", "--rm", 
-                    f"{package_name}:{version}-{os_type.lower()}", 
-                    "/bin/bash" if os_type != 'Windows' else "powershell", 
-                    "-c", "twine upload dist/* --username $TWINE_USERNAME --password $TWINE_PASSWORD"
-                ]
-                subprocess.run(docker_run_command, check=True)
+                subprocess.run([
+                    "../basic_release.sh", package_path, version_number
+                ], check=True)
                 print("Upload complete!")
 
 
 def main():
     parser = argparse.ArgumentParser(
         description='Process package information for docker release.',
-        usage='python docker_release.py [-u] <package_name> <min_version> <max_version> <path_to_package>'
+        usage='python docker_release.py <package_name> [-u] [version_number] <min_version> <max_version> <path_to_package>'
     )
     parser.add_argument('-u', action='store_true', help='Upload the package')
     parser.add_argument('package_name', type=str, help='Name of the package')
     parser.add_argument('min_version', type=str, help='Minimum version')
     parser.add_argument('max_version', type=str, help='Maximum version')
     parser.add_argument('package_path', type=str, help='Path to the package directory')
+    parser.add_argument('version_number', nargs='?', type=str, help='Version number (required if -u is used)')
 
     if len(sys.argv) < 5:
         parser.print_usage()
@@ -108,6 +105,11 @@ def main():
         print("Error: Invalid version format. Versions must be in the format 'X.Y'.")
         sys.exit(1)
 
+    # Ensure version_number is provided if -u is set
+    if args.u and not args.version_number:
+        print("Error: Version number is required when using the -u flag.")
+        sys.exit(1)
+
     try:
         valid_versions = generate_versions(args.min_version, args.max_version)
     except ValueError as e:
@@ -115,7 +117,7 @@ def main():
         sys.exit(1)
     
     for os_type in ['linux', 'windows', 'macos']:
-        build_and_release(args.package_name, valid_versions, os_type, args.u, args.package_path)
+        build_and_release(args.package_name, valid_versions, os_type, args.u, args.package_path, args.version_number)
 
 
 if __name__ == "__main__":
