@@ -47,7 +47,7 @@ def build_and_release(package_name, valid_versions, os_type, upload, package_pat
     if upload:
         print(f'Uploading {package_name} for Python 3.{version} on {os_type}...')
         subprocess.run([
-            "../basic_release.sh", package_path, version_number
+            "../basic_release.sh", package_path, version_number, "-docker", package_name
         ], check=True)
         print("Upload complete!")
 
