@@ -3,6 +3,10 @@
 Use docker to build (and optionally release) Python packages for PyPI. Windows and Linux
 builds are handled via the dockerfiles, but Mac builds are done using the [Docker-OSX image](https://github.com/sickcodes/Docker-OSX).
 
+## Requirements
+In order to run the docker releaser, you first need to install `docker` as normal. Then, navigate to
+https://github.com/sickcodes/Docker-OSX and install the latest macos image `sickcodes/docker-osx:latest`.
+
 ## Usage
 ```
 python docker_release.py <package_name> [-u] [version_number] <min_version> <max_version> <path_to_package>
@@ -19,7 +23,7 @@ If you just want to build the package, you can do as follows. Example for `diffp
 python docker_release.py diffpy.pdffit2 3.10 3.12 ~/Documents/dev/diffpy.pdffit2
 ```
 
-Locate the build files in the build or dist directory within `path_to_package`.
+The build files can be found by running `docker images`
 
 ### Build and Upload
 Follow these first steps, from `basic_release.txt`:

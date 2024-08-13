@@ -6,6 +6,6 @@ WORKDIR /app
 COPY . /app
 
 RUN pip install --upgrade pip
-RUN pip install build twine
+RUN pip install build
 
 CMD ["powershell"]

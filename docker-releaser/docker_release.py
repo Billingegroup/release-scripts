@@ -31,55 +31,25 @@ def build_and_release(package_name, valid_versions, os_type, upload, package_pat
         print(f"Error: The provided path '{package_path}' does not exist.")
         sys.exit(1)
 
-    if os_type == 'macos':
-        docker_container_name = "docker-osx"
-        for version in valid_versions:
-            print(f'Building {package_name} for Python 3.{version} on macOS...')
+    dockerfile = f"Dockerfile.{os_type.lower()}"
+    for version in valid_versions:
+        print(f'Building {package_name} for Python 3.{version} on {os_type}...')
 
-            # Copy source code to Docker-OSX container
-            subprocess.run([
-                "docker", "cp", package_path, f"{docker_container_name}:/app"
-            ], check=True)
+        # Build Docker image
+        docker_build_command = [
+            "docker", "build", 
+            "--build-arg", f"PYTHON_VERSION=3.{version}", 
+            "-t", f"{package_name}:3.{version}-{os_type.lower()}", 
+            "-f", dockerfile, package_path
+        ]
+        subprocess.run(docker_build_command, check=True)
 
-            # Run build commands inside Docker-OSX container
-            docker_exec_command = [
-                "docker", "exec", "-it", docker_container_name,
-                "bash", "-c", f"""
-                cd /app &&
-                pyenv install --skip-existing 3.{version} &&
-                pyenv local 3.{version} &&
-                python -m build
-                """
-            ]
-            subprocess.run(docker_exec_command, check=True)
-            print("Build complete!")
-            
-            if upload:
-                print(f'Uploading {package_name} for Python 3.{version} on macOS...')
-                subprocess.run([
-                    "../basic_release.sh", package_path, version_number
-                ], check=True)
-                print("Upload complete!")
-    else:
-        dockerfile = f"Dockerfile.{os_type.lower()}"
-        for version in valid_versions:
-            print(f'Building {package_name} for Python 3.{version} on {os_type}...')
-
-            # Build Docker image
-            docker_build_command = [
-                "docker", "build", 
-                "--build-arg", f"PYTHON_VERSION=3.{version}", 
-                "-t", f"{package_name}:3.{version}-{os_type.lower()}", 
-                "-f", dockerfile, package_path
-            ]
-            subprocess.run(docker_build_command, check=True)
-
-            if upload:
-                print(f'Uploading {package_name} for Python 3.{version} on {os_type}...')
-                subprocess.run([
-                    "../basic_release.sh", package_path, version_number
-                ], check=True)
-                print("Upload complete!")
+    if upload:
+        print(f'Uploading {package_name} for Python 3.{version} on {os_type}...')
+        subprocess.run([
+            "../basic_release.sh", package_path, version_number
+        ], check=True)
+        print("Upload complete!")
 
 
 def main():
@@ -116,8 +86,12 @@ def main():
         print(f"Error: {e}")
         sys.exit(1)
     
-    for os_type in ['linux', 'windows', 'macos']:
-        build_and_release(args.package_name, valid_versions, os_type, args.u, args.package_path, args.version_number)
+    # Strip trailing '/' from path if there
+    package_path = args.package_path[:-1] if args.package_path.endswith('/') else args.package_path
+    
+    os_types = ['linux', 'windows', 'macos']
+    for os_type in os_types:
+        build_and_release(args.package_name, valid_versions, os_type, args.u, package_path, args.version_number)
 
 
 if __name__ == "__main__":

@@ -1,4 +1,4 @@
-# Dockerfile.linux
+# Dockerfile.macos
 ARG PYTHON_VERSION
 FROM python:$PYTHON_VERSION
 
@@ -8,4 +8,4 @@ COPY . /app
 RUN pip install --upgrade pip
 RUN pip install build
 
-CMD ["bash"]
+CMD ["zsh"]
