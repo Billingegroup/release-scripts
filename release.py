@@ -421,9 +421,8 @@ if __name__ == "__main__":
     if len(pargs) > 2:
         parser.error("Improper usage. Too many arguments!")
 
-    # Prevent release and pre_release both being true
     if opts.release and opts.pre_release:
-        parser.error("Cannot release and pre-release at the same time.")
+        parser.error("Please re-run the command specifying either release or pre_release.")
 
     # Set release directory to absolute path
     pargs[0] = Path(pargs[0]).resolve()
