@@ -415,15 +415,19 @@ def cf_hash(opts, pargs):
 if __name__ == "__main__":
     parser = create_option_parser()
     (opts, pargs) = parser.parse_args()
-    
+
     if len(pargs) < 2:
         parser.error("Improper usage. Too few arguments!")
     if len(pargs) > 2:
         parser.error("Improper usage. Too many arguments!")
-    
+
+    # Prevent release and pre_release both being true
+    if opts.release and opts.pre_release:
+        parser.error("Cannot release and pre-release at the same time.")
+
     # Set release directory to absolute path
     pargs[0] = Path(pargs[0]).resolve()
-    
+
     # Actions
     if opts.release:
         opts.changelog = True
