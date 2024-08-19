@@ -128,6 +128,13 @@ def create_option_parser():
     )
     
     rel_group.add_option(
+        "--pre-release",
+        action="store_true",
+        dest="pre_release",
+        help="Push the tag, upload to Github, and upload to PyPi."
+    )
+    
+    rel_group.add_option(
         "--github",
         action="store_true",
         dest="github",
@@ -420,6 +427,10 @@ if __name__ == "__main__":
     # Actions
     if opts.release:
         opts.changelog = True
+        opts.tag = True
+        opts.github = True
+        opts.pypi = True
+    if opts.pre_release:
         opts.tag = True
         opts.github = True
         opts.pypi = True
