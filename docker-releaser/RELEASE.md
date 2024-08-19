@@ -3,9 +3,12 @@
 Use docker to build (and optionally release) Python packages for PyPI. Windows and Linux
 builds are handled via the dockerfiles, but Mac builds are done using the [Docker-OSX image](https://github.com/sickcodes/Docker-OSX).
 
-## Requirements
+## Requirements/Install
 In order to run the docker releaser, you first need to install `docker` as normal. Then, navigate to
 https://github.com/sickcodes/Docker-OSX and install the latest macos image `sickcodes/docker-osx:latest`.
+
+Once this is done, clone the repo https://github.com/Billingegroup/release-scripts
+`cd` into the `docker-releaser` directory and now you are ready to run the `docker_release.py` script as normal.
 
 ## Usage
 ```
