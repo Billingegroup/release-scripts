@@ -376,25 +376,16 @@ def pypi_release(opts, pargs):
 
     # Only upload source
     else:
-        # Create temporary release directory
-        tmp_dir = "release_tmp"
-        while (Path(release_dir) / tmp_dir).exists():
-            tmp_dir += "_prime"
-        call(f"mkdir {tmp_dir}", release_dir)
-    
-        # Build tar
-        project_pep = project.replace("-", "_").replace(".", "_").lower()
-        while "__" in project_pep:
-            project_pep = project_pep.replace("__", "_")
-        project = Path(release_dir).name
-        tgz_name = f"{project_pep}-{version}.tar.gz"
-        call(f"tar --exclude=\"./{tmp_dir}\" -zcf \"./{tmp_dir}/{tgz_name}\" . ", release_dir)
-
+        call("python -m build --sdist", release_dir)
         # Upload using twine
-        call(f"twine upload \"./{tmp_dir}/{tgz_name}\"", release_dir)
-    
-        # Cleanup
-        call(f"rm -rf {tmp_dir}", release_dir)
+        no_tar = True
+        for file in list((release_dir / "dist").iterdir()):
+            if re.search(f".*{version}.*.tar.gz", file.name):
+                no_tar = False
+        if no_tar:
+            call(f"echo \"Warning: No new distribution build. Check for any untracked changes.\"", release_dir)
+        else:
+            call(f"twine upload dist/*{version}*.tar.gz", release_dir)
 
 
 # Generate SHA256 Hash for a Conda-Forge Release
