@@ -349,23 +349,38 @@ def pypi_release(opts, pargs):
     release_dir = pargs[0]
     version = pargs[1]
 
-    # Build distribution (build will fail if there have been no changes since the previous version)
-    call("python -m build", release_dir)
+    # Create temporary release directory
+    tmp_dir = "release_tmp"
+    while (Path(release_dir) / tmp_dir).exists():
+        tmp_dir += "_prime"
+    call(f"mkdir {tmp_dir}", release_dir)
     
-    # Upload using twine
-    no_tar = True
-    no_whl = True
-    for file in list((release_dir / "dist").iterdir()):
-        if re.search(f".*{version}.*.tar.gz", file.name):
-            no_tar = False
-        if re.search(f".*{version}.*.whl", file.name):
-            no_whl = False
-    if no_tar:
-        call(f"echo \"Warning: No new distribution build. Check for any untracked changes.\"", release_dir)
-    elif no_whl:
-        call(f"echo \"Warning: No wheel found.\"", release_dir)
-    else:
-        call(f"twine upload dist/*{version}*.tar.gz dist/*{version}*.whl", release_dir)
+    # Build tar
+    project = Path(release_dir).name
+    tgz_name = f"{project}-{version}.tar.gz"
+    call(f"tar --exclude=\"./{tmp_dir}\" -zcf \"./{tmp_dir}/{tgz_name}\" . ", release_dir)
+
+    # IMPORTANT: no wheel built, must be tested on all images~!
+    ## Build distribution (build will fail if there have been no changes since the previous version)
+    # call("python -m build", release_dir)
+    
+    ## Upload using twine
+    # no_tar = True
+    # no_whl = True
+    # for file in list((release_dir / "dist").iterdir()):
+    #     if re.search(f".*{version}.*.tar.gz", file.name):
+    #         no_tar = False
+    #     if re.search(f".*{version}.*.whl", file.name):
+    #         no_whl = False
+    # if no_tar:
+    #     call(f"echo \"Warning: No new distribution build. Check for any untracked changes.\"", release_dir)
+    # elif no_whl:
+    #     call(f"echo \"Warning: No wheel found.\"", release_dir)
+    # else:
+    #     call(f"twine upload dist/*{version}*.tar.gz dist/*{version}*.whl", release_dir)
+
+    # Only upload the source distribution
+    call(f"twine upload \"./{tmp_dir}/{tgz_name}\"", release_dir)
     
 # Generate SHA256 Hash for a Conda-Forge Release
 def cf_hash(opts, pargs):
