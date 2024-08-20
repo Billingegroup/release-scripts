@@ -422,7 +422,7 @@ if __name__ == "__main__":
         parser.error("Improper usage. Too many arguments!")
 
     if opts.release and opts.pre_release:
-        parser.error("Please re-run the command specifying either release or pre_release.")
+        parser.error("Both release and pre-release specified. Please re-run the command specifying either release or pre_release.")
 
     # Set release directory to absolute path
     pargs[0] = Path(pargs[0]).resolve()
