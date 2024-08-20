@@ -356,6 +356,8 @@ def pypi_release(opts, pargs):
     release_dir = pargs[0]
     version = pargs[1]
 
+    db_warning = "Warning: No new distribution build. This occurs when there are no new changes to the source code since the previous release. Please check for any untracked changes and update your package changelog/release-history to reflect the newest version."
+
     # Build wheel and source
     if opts.build_wheel:
         call("python -m build", release_dir) 
@@ -368,7 +370,7 @@ def pypi_release(opts, pargs):
             if re.search(f".*{version}.*.whl", file.name):
                 no_whl = False
         if no_tar:
-            call(f"echo \"Warning: No new distribution build. Check for any untracked changes.\"", release_dir)
+            call(f"echo \"{db_warning}\"", release_dir)
         elif no_whl:
             call(f"echo \"Warning: No wheel found.\"", release_dir)
         else:
@@ -383,7 +385,7 @@ def pypi_release(opts, pargs):
             if re.search(f".*{version}.*.tar.gz", file.name):
                 no_tar = False
         if no_tar:
-            call(f"echo \"Warning: No new distribution build. Check for any untracked changes.\"", release_dir)
+            call(f"echo \"{db_warning}\"", release_dir)
         else:
             call(f"twine upload dist/*{version}*.tar.gz", release_dir)
 
