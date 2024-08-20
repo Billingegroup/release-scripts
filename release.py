@@ -382,6 +382,10 @@ def pypi_release(opts, pargs):
     # Only upload the source distribution
     call(f"twine upload \"./{tmp_dir}/{tgz_name}\"", release_dir)
     
+    # Cleanup
+    call(f"rm -rf {tmp_dir}", release_dir)
+
+
 # Generate SHA256 Hash for a Conda-Forge Release
 def cf_hash(opts, pargs):
     version = pargs[1]
