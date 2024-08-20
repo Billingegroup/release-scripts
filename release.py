@@ -362,8 +362,7 @@ def pypi_release(opts, pargs):
 
     # IMPORTANT: no wheel built, must be tested on all images~!
     ## Build distribution (build will fail if there have been no changes since the previous version)
-    # call("python -m build", release_dir)
-    
+    # call("python -m build", release_dir) 
     ## Upload using twine
     # no_tar = True
     # no_whl = True
@@ -379,7 +378,8 @@ def pypi_release(opts, pargs):
     # else:
     #     call(f"twine upload dist/*{version}*.tar.gz dist/*{version}*.whl", release_dir)
 
-    # Only upload the source distribution
+    # Upload using twine
+    # Only source is uploaded
     call(f"twine upload \"./{tmp_dir}/{tgz_name}\"", release_dir)
     
     # Cleanup
