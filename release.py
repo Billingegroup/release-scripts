@@ -383,8 +383,11 @@ def pypi_release(opts, pargs):
         call(f"mkdir {tmp_dir}", release_dir)
     
         # Build tar
+        project_pep = project.replace("-", "_").replace(".", "_").lower()
+        while "__" in project_pep:
+            project_pep = project_pep.replace("__", "_")
         project = Path(release_dir).name
-        tgz_name = f"{project}-{version}.tar.gz"
+        tgz_name = f"{project_pep}-{version}.tar.gz"
         call(f"tar --exclude=\"./{tmp_dir}\" -zcf \"./{tmp_dir}/{tgz_name}\" . ", release_dir)
 
         # Upload using twine
