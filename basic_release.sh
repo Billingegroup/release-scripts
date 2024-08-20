@@ -3,13 +3,13 @@
 # Inputs
 # $1 -- Directory to release
 # $2 -- Version number
-# $3 -- Optional flag -docker
-# $4 -- package_name (required if -docker is used)
+# $3 -- Optional flag to use docker release, --docker or -d
+# $4 -- The name of the package to release, required with --docker or -d
 
-if [ -z "${1+x}" ] || [ -z "${2+x}" ] || { [ "$3" = "-docker" ] && [ -z "${4+x}" ]; }
+if [ -z "${1+x}" ] || [ -z "${2+x}" ] || { { [ "$3" = "--docker" ] || [ "$3" = "-d" ]; } && [ -z "${4+x}" ]; }
 then
-    if [ "$3" = "-docker" ]; then
-        echo "Usage: $0 <package_directory> <package_version> [-docker] [package_name]"
+    if [ "$3" = "--docker" ] || [ "$3" = "-d" ]; then
+        echo "Usage: $0 <package_directory> <package_version> [--docker|-d] [package_name]"
     else
         echo "Usage: $0 <package_directory> <package_version>"
     fi
@@ -48,7 +48,7 @@ else
     gh_title="-t $GH_RELEASE_TITLE"
 fi
 
-if [ "$docker_flag" = "-docker" ]; then
+if [ "$docker_flag" = "--docker" ] || [ "$docker_flag" = "-d" ]; then
     # Get all existing Docker images with package_name
     docker_images=$(docker images --format '{{.Repository}}:{{.Tag}}' | grep "$package_name")
     if [ -z "$docker_images" ]; then
