@@ -235,8 +235,8 @@ def main():
     SHA256 = pypi_version_info[new_version]
     print(
         f"You've selected version {new_version} with SHA256 "
-        f"{format_sha(SHA256)} for {package_name}. "
-        "We will now update the meta.yaml file and create a PR to the feedstock repository."
+        f"{format_sha(SHA256)} for {package_name}."
+        "\nWe will now update the meta.yaml file and create a PR to the feedstock repository."
     )
 
     # Get the GitHub username using the GitHub CLI
