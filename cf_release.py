@@ -12,12 +12,12 @@ PR into the GitHub feedstock repository.
 Workflow:
 
 - The user is prompted to enter the name of a PyPI package.
-- Retrieves the feedstock directory and meta.yaml file paths
-- Fetches the latest versions and SHA256 hashes from PyPI.
-- Displays the latest PyPI versions, asking the user to choose the version.
-- Fetches the user's GitHub username using the GitHub CLI for authentication
-- Updates the meta.yaml file with the new version and SHA256
-- Commits these changes, pushes them to GitHub, and creates a PR
+- Retrieve the feedstock directory and meta.yaml file paths
+- Fetch the latest versions and SHA256 hashes from PyPI.
+- Display the latest PyPI versions, asking the user to choose the version.
+- Fetch the user's GitHub username using the GitHub CLI for authentication
+- Update the meta.yaml file with the new version and SHA256
+- Commit these changes, pushes them to GitHub, and creates a PR
 """
 
 """
@@ -154,7 +154,7 @@ User Prompts
 """
 
 
-def prompt_is_latest_version(pypi_version_info):
+def prompt_is_latest_version_used(pypi_version_info):
     latest_version = next(iter(pypi_version_info))
     use_latest_version = confirm(
         f"\nQ2. Would you like to proceed with the latest version {latest_version}?",
@@ -163,7 +163,7 @@ def prompt_is_latest_version(pypi_version_info):
     return use_latest_version
 
 
-def print_latest_package_verison(package_name, pypi_version_info):
+def print_available_package_info(package_name, pypi_version_info):
     print(f"\nThe latest versions of {package_name} are:")
 
     for i, (version, sha) in enumerate(pypi_version_info.items()):
@@ -178,7 +178,7 @@ GitHub Integration
 """
 
 
-def get_github_username_via_gh():
+def get_github_username():
     """Get the GitHub username using the GitHub CLI."""
     try:
         username = subprocess.check_output(
@@ -199,7 +199,7 @@ Main Entry Point
 
 def main():
     # Q1 Ask the package name from the user
-    package_name = prompt("Q1. Please enter the PyPI package name Ex) numpy", type=str)
+    package_name = prompt("Q1. Please enter the PyPI package name Ex) diffpy.pdfgui", type=str)
 
     try:
         # Get path to feedstock directory and meta.yaml file
@@ -215,11 +215,10 @@ def main():
         sys.exit(1)
 
     # Print the latest versions of the package
-    print_latest_package_verison(package_name, pypi_version_info)
+    print_available_package_info(package_name, pypi_version_info)
 
-    # Q2. Ask the user if they want to proceed with the latest version
-    if prompt_is_latest_version(pypi_version_info):
-        # If the user confirms, proceed with the latest version
+    # Q2. Ask user to proceed with the latest version
+    if prompt_is_latest_version_used(pypi_version_info):
         new_version = next(iter(pypi_version_info))
         print(f"Using latest version: {new_version}")
     else:
@@ -235,14 +234,14 @@ def main():
     # Get the SHA256 hash for the selected version
     SHA256 = pypi_version_info[new_version]
     print(
-        f"Great, you have selected version {new_version} with SHA256 "
+        f"You've selected version {new_version} with SHA256 "
         f"{format_sha(SHA256)} for {package_name}. "
         "We will now update the meta.yaml file and create a PR to the feedstock repository."
     )
 
     # Get the GitHub username using the GitHub CLI
     try:
-        username = get_github_username_via_gh()
+        username = get_github_username()
     except RuntimeError as e:
         print(str(e))
         sys.exit(1)
