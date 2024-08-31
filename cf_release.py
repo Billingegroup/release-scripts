@@ -62,7 +62,7 @@ def get_package_versions_SHA(package_name, count=5):
         return version_info
     else:
         error_message = (
-            f"ERROR: No matching package has been found for {package_name}. "
+            f"No matching package has been found for {package_name}. "
             "Please double check the package name or visit "
             "https://pypi.org to check whether your package exists."
         )
@@ -79,7 +79,7 @@ def get_feedstock_and_meta_file_path(package_name):
     # Check if the meta file exists to ensure the path is correct
     if not exists(meta_file_path):
         error_message = (
-            f"ERROR: meta.yaml file not found. Please re-run after checking whether {package_name}-feedstock "
+            f"meta.yaml file not found. Please re-run after checking whether {package_name}-feedstock "
             "exists in the dev folder Please also check the folder strucutre provided in the "
             "GitLab documentation: https://www.gitlab.com/learn/conda-forge#dev-folder-structure"
         )
@@ -125,9 +125,7 @@ def run_gh_shell_command(cwd, meta_file_path, version, SHA256, username):
     run_command("git add recipe/meta.yaml", cwd=cwd)
 
     # Commit the changes
-    run_command(
-        f'git commit -m "Update conda package to {version}"', cwd=cwd
-    )
+    run_command(f'git commit -m "Update conda package to {version}"', cwd=cwd)
 
     # Push the new branch to your origin repository
     run_command(f"git push origin {version}", cwd=cwd)
@@ -193,7 +191,9 @@ Main Entry Point
 
 def main():
     # Q1 Ask the package name from the user
-    package_name = prompt("Q1. Please enter the PyPI package name Ex) diffpy.pdfgui", type=str)
+    package_name = prompt(
+        "Q1. Please enter the PyPI package name Ex) diffpy.pdfgui", type=str
+    )
 
     try:
         # Get path to feedstock directory and meta.yaml file
@@ -205,8 +205,7 @@ def main():
         pypi_version_info = get_package_versions_SHA(package_name)
 
     except (FileNotFoundError, ValueError) as e:
-        print(str(e))
-        sys.exit(1)
+        raise Exception(e)
 
     # Print the latest versions of the package
     print_available_package_info(package_name, pypi_version_info)
@@ -237,8 +236,7 @@ def main():
     try:
         username = get_github_username()
     except RuntimeError as e:
-        print(str(e))
-        sys.exit(1)
+        raise Exception(e)
 
     # Run the shell command to update the .yml file and create a PR
     run_gh_shell_command(
@@ -247,4 +245,7 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    try:
+        main()
+    except Exception as e:
+        print(f"Error: {str(e)}")
