@@ -106,32 +106,31 @@ def update_meta_yaml(meta_file_path, new_version, new_sha256):
             file.write(line)
 
 
-def run_gh_shell_command(fd_stock_dir_path, meta_file_path, version, SHA256, username):
+def run_gh_shell_command(cwd, meta_file_path, version, SHA256, username):
     """
     Create a PR from a branch name of <new_version>
     to the main branch of the feedstock repository.
     """
-
     # Check out main and pull the latest changes
-    run_command("git checkout main", cwd=fd_stock_dir_path)
-    run_command("git pull upstream main", cwd=fd_stock_dir_path)
+    run_command("git checkout main", cwd=cwd)
+    run_command("git pull upstream main", cwd=cwd)
 
     # Create and switch to a new branch named after the new version
-    run_command(f"git checkout -b {version}", cwd=fd_stock_dir_path)
+    run_command(f"git checkout -b {version}", cwd=cwd)
 
     # Update the meta.yaml file
     update_meta_yaml(meta_file_path, version, SHA256)
 
     # Add the updated meta.yaml file to the staging area
-    run_command("git add recipe/meta.yaml", cwd=fd_stock_dir_path)
+    run_command("git add recipe/meta.yaml", cwd=cwd)
 
     # Commit the changes
     run_command(
-        f'git commit -m "Update conda package to {version}"', cwd=fd_stock_dir_path
+        f'git commit -m "Update conda package to {version}"', cwd=cwd
     )
 
     # Push the new branch to your origin repository
-    run_command(f"git push origin {version}", cwd=fd_stock_dir_path)
+    run_command(f"git push origin {version}", cwd=cwd)
 
     # Create a pull request using GitHub CLI
     pr_command = (
@@ -141,7 +140,7 @@ def run_gh_shell_command(fd_stock_dir_path, meta_file_path, version, SHA256, use
     )
 
     # Run the PR create command in the appropriate directory
-    run_command(pr_command, cwd=fd_stock_dir_path)
+    run_command(pr_command, cwd=cwd)
 
 
 """
