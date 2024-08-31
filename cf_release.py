@@ -111,42 +111,37 @@ def run_gh_shell_command(fd_stock_dir_path, meta_file_path, version, SHA256, use
     Create a PR from a branch name of <new_version>
     to the main branch of the feedstock repository.
     """
-    try:
-        # Check out main and pull the latest changes
-        run_command("git checkout main", cwd=fd_stock_dir_path)
-        run_command("git pull upstream main", cwd=fd_stock_dir_path)
 
-        # Create and switch to a new branch named after the new version
-        run_command(f"git checkout -b {version}", cwd=fd_stock_dir_path)
+    # Check out main and pull the latest changes
+    run_command("git checkout main", cwd=fd_stock_dir_path)
+    run_command("git pull upstream main", cwd=fd_stock_dir_path)
 
-        # Update the meta.yaml file
-        update_meta_yaml(meta_file_path, version, SHA256)
+    # Create and switch to a new branch named after the new version
+    run_command(f"git checkout -b {version}", cwd=fd_stock_dir_path)
 
-        # Add the updated meta.yaml file to the staging area
-        run_command("git add recipe/meta.yaml", cwd=fd_stock_dir_path)
+    # Update the meta.yaml file
+    update_meta_yaml(meta_file_path, version, SHA256)
 
-        # Commit the changes
-        run_command(
-            f'git commit -m "Update conda package to {version}"', cwd=fd_stock_dir_path
-        )
+    # Add the updated meta.yaml file to the staging area
+    run_command("git add recipe/meta.yaml", cwd=fd_stock_dir_path)
 
-        # Push the new branch to your origin repository
-        run_command(f"git push origin {version}", cwd=fd_stock_dir_path)
+    # Commit the changes
+    run_command(
+        f'git commit -m "Update conda package to {version}"', cwd=fd_stock_dir_path
+    )
 
-        # Create a pull request using GitHub CLI
-        pr_command = (
-            f"gh pr create --base main --head {username}:{version} "
-            f"--title 'Update meta.yaml to {version}' "
-            f"--body 'Updated meta.yaml to version {version} with SHA value of {SHA256}'"
-        )
+    # Push the new branch to your origin repository
+    run_command(f"git push origin {version}", cwd=fd_stock_dir_path)
 
-        # Run the PR create command in the appropriate directory
-        run_command(pr_command, cwd=fd_stock_dir_path)
+    # Create a pull request using GitHub CLI
+    pr_command = (
+        f"gh pr create --base main --head {username}:{version} "
+        f"--title 'Update meta.yaml to {version}' "
+        f"--body 'Updated meta.yaml to version {version} with SHA value of {SHA256}'"
+    )
 
-    except subprocess.CalledProcessError as e:
-        print(f"Failed to execute command: {e.cmd}")
-        print(f"Error message: {e.stderr}")
-        raise
+    # Run the PR create command in the appropriate directory
+    run_command(pr_command, cwd=fd_stock_dir_path)
 
 
 """
