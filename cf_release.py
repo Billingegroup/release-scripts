@@ -236,7 +236,7 @@ def main():
     print(
         f"You've selected version {new_version} with SHA256 "
         f"{format_sha(SHA256)} for {package_name}."
-        "\nWe will now update the meta.yaml file and create a PR to the feedstock repository."
+        "\nWe will now update the meta.yaml file and create a PR into the feedstock repository."
     )
 
     # Get the GitHub username using the GitHub CLI
