@@ -9,6 +9,10 @@ This script streamlines the process of updating Python package versions and
 their corresponding SHA256 hash in a meta.yaml file, followed by creating a
 PR into the GitHub feedstock repository.
 
+How to use:
+
+python /path/.../cf_release.py
+
 Workflow:
 
 - The user is prompted to enter the name of a PyPI package.
@@ -195,17 +199,11 @@ def main():
         "Q1. Please enter the PyPI package name Ex) diffpy.pdfgui", type=str
     )
 
-    try:
-        # Get path to feedstock directory and meta.yaml file
-        fd_stock_dir_path, meta_file_path = get_feedstock_and_meta_file_path(
-            package_name
-        )
+    # Get path to feedstock directory and meta.yaml file
+    fd_stock_dir_path, meta_file_path = get_feedstock_and_meta_file_path(package_name)
 
-        # Get the latest versions and SHA256 hashes from PyPI
-        pypi_version_info = get_package_versions_SHA(package_name)
-
-    except (FileNotFoundError, ValueError) as e:
-        raise Exception(e)
+    # Get the latest versions and SHA256 hashes from PyPI
+    pypi_version_info = get_package_versions_SHA(package_name)
 
     # Print the latest versions of the package
     print_available_package_info(package_name, pypi_version_info)
@@ -233,10 +231,7 @@ def main():
     )
 
     # Get the GitHub username using the GitHub CLI
-    try:
-        username = get_github_username()
-    except RuntimeError as e:
-        raise Exception(e)
+    username = get_github_username()
 
     # Run the shell command to update the .yml file and create a PR
     run_gh_shell_command(
@@ -247,5 +242,11 @@ def main():
 if __name__ == "__main__":
     try:
         main()
+    except RuntimeError as e:
+        print(f"Runtime Error: {str(e)}")
+    except ValueError as e:
+        print(f"Value Error: {str(e)}")
+    except FileNotFoundError as e:
+        print(f"File Not Found Error: {str(e)}")
     except Exception as e:
-        print(f"Error: {str(e)}")
+        print(f"Unexpected Error: {str(e)}")
