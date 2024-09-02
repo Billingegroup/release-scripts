@@ -84,8 +84,7 @@ def get_feedstock_and_meta_file_path(package_name):
     if not exists(meta_file_path):
         error_message = (
             f"meta.yaml file not found. Please re-run after checking whether {package_name}-feedstock "
-            "exists in the dev folder Please also check the folder strucutre provided in the "
-            "GitLab documentation: https://www.gitlab.com/learn/conda-forge#dev-folder-structure"
+            "exists in the dev folder and the meta.yaml file is present in the recipe folder."
         )
 
         raise FileNotFoundError(error_message)
@@ -240,13 +239,4 @@ def main():
 
 
 if __name__ == "__main__":
-    try:
-        main()
-    except RuntimeError as e:
-        print(f"Runtime Error: {str(e)}")
-    except ValueError as e:
-        print(f"Value Error: {str(e)}")
-    except FileNotFoundError as e:
-        print(f"File Not Found Error: {str(e)}")
-    except Exception as e:
-        print(f"Unexpected Error: {str(e)}")
+    main()
