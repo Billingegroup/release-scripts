@@ -133,6 +133,10 @@ def run_gh_shell_command(cwd, meta_file_path, version, SHA256, username):
     # Push the new branch to your origin repository
     run_command(f"git push origin {version}", cwd=cwd)
 
+    # Explicit set <username>-<packagne_name>-feedstock as the default repo
+    # for GitHub CLI
+    run_command("gh repo set-default bobleesj/cifkit-feedstock", cwd=cwd)
+
     # Create a pull request using GitHub CLI
     pr_command = (
         f"gh pr create --base main --head {username}:{version} "
