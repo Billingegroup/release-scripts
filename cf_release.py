@@ -102,7 +102,9 @@ def update_meta_yaml(meta_file_path, new_version, new_sha256):
 
     with open(meta_file_path, "w") as file:
         for line in lines:
-            if "set version" in line:
+            if "{%- set version =" in line:
+                line = f'{{%- set version = "{new_version}" -%}}\n'
+            elif "{% set version =" in line:
                 line = f'{{% set version = "{new_version}" %}}\n'
             elif "sha256:" in line:
                 line = f"  sha256: {new_sha256}\n"
