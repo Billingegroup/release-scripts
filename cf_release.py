@@ -102,14 +102,14 @@ def update_meta_yaml(meta_file_path, new_version, new_sha256):
 
     with open(meta_file_path, "w") as file:
         for line in lines:
-            if "{%- set version =" in line:
-                line = f'{{%- set version = "{new_version}" -%}}\n'
+            if "set version" in line:
+                line = f'{{% set version = "{new_version}" %}}\n'
             elif "sha256:" in line:
                 line = f"  sha256: {new_sha256}\n"
             file.write(line)
 
 
-def run_gh_shell_command(cwd, meta_file_path, version, SHA256, username):
+def run_gh_shell_command(cwd, meta_file_path, version, SHA256, username, package_name):
     """
     Create a PR from a branch name of <new_version>
     to the main branch of the feedstock repository.
@@ -135,7 +135,7 @@ def run_gh_shell_command(cwd, meta_file_path, version, SHA256, username):
 
     # Explicit set <username>-<packagne_name>-feedstock as the default repo
     # for GitHub CLI
-    run_command("gh repo set-default bobleesj/cifkit-feedstock", cwd=cwd)
+    run_command(f"gh repo set-default {username}/{package_name}-feedstock", cwd=cwd)
 
     # Create a pull request using GitHub CLI
     pr_command = (
@@ -238,7 +238,7 @@ def main():
 
     # Run the shell command to update the .yml file and create a PR
     run_gh_shell_command(
-        fd_stock_dir_path, meta_file_path, new_version, SHA256, username
+        fd_stock_dir_path, meta_file_path, new_version, SHA256, username, package_name
     )
 
 
