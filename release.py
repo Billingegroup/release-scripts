@@ -163,10 +163,10 @@ def create_option_parser():
     )
     
     rel_group.add_option(
-        "--wheel",
+        "--no-wheel",
         action="store_true",
-        dest="build_wheel",
-        help="Build a wheel and a source distribution for the PyPi release."
+        dest="build_no_wheel",
+        help="Provide source distribution only for the PyPi release."
     )
 
     rel_group.add_option(
@@ -351,15 +351,29 @@ def github_release(opts, pargs):
     
     # Cleanup
     call(f"rm -rf {tmp_dir}", release_dir)
-        
+
+   
 def pypi_release(opts, pargs):
     release_dir = pargs[0]
     version = pargs[1]
 
     db_warning = "Warning: No new distribution build. This occurs when there are no new changes to the source code since the previous release. Please check for any untracked changes and update your package changelog/release-history to reflect the newest version."
 
-    # Build wheel and source
-    if opts.build_wheel:
+    # Only upload source
+    if opts.build_no_wheel:
+        call("python -m build --sdist", release_dir)
+        # Upload using twine
+        no_tar = True
+        for file in list((release_dir / "dist").iterdir()):
+            if re.search(f".*{version}.*.tar.gz", file.name):
+                no_tar = False
+        if no_tar:
+            call(f"echo \"{db_warning}\"", release_dir)
+        else:
+            call(f"twine upload dist/*{version}*.tar.gz", release_dir)
+
+    # Build wheel and source (Default behavior)
+    else:
         call("python -m build", release_dir) 
         # Upload using twine
         no_tar = True
@@ -375,19 +389,6 @@ def pypi_release(opts, pargs):
             call(f"echo \"Warning: No wheel found.\"", release_dir)
         else:
             call(f"twine upload dist/*{version}*.tar.gz dist/*{version}*.whl", release_dir)
-
-    # Only upload source
-    else:
-        call("python -m build --sdist", release_dir)
-        # Upload using twine
-        no_tar = True
-        for file in list((release_dir / "dist").iterdir()):
-            if re.search(f".*{version}.*.tar.gz", file.name):
-                no_tar = False
-        if no_tar:
-            call(f"echo \"{db_warning}\"", release_dir)
-        else:
-            call(f"twine upload dist/*{version}*.tar.gz", release_dir)
 
 
 # Generate SHA256 Hash for a Conda-Forge Release
