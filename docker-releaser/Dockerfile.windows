@@ -1,11 +1,25 @@
-# Dockerfile.windows
-ARG PYTHON_VERSION
-FROM python:$PYTHON_VERSION
+# Filename: Dockerfile.windows
+# Use a Windows Server Core as the base image with Python installed
+ARG PYTHON_VERSION=3.11
+FROM mcr.microsoft.com/windows/servercore:ltsc2022
 
-WORKDIR /app
-COPY . /app
+# Install Python
+SHELL ["powershell", "-Command"]
+RUN Invoke-WebRequest -Uri "https://www.python.org/ftp/python/$env:PYTHON_VERSION/python-$env:PYTHON_VERSION-amd64.exe" -OutFile "python-installer.exe" ; \
+    Start-Process "python-installer.exe" -ArgumentList '/quiet InstallAllUsers=1 PrependPath=1' -NoNewWindow -Wait ; \
+    Remove-Item -Force "python-installer.exe"
 
-RUN pip install --upgrade pip
-RUN pip install build
+# Set working directory
+WORKDIR C:/app
 
-CMD ["powershell"]
+# Copy the package source code into the container
+COPY . .
+
+# Install build tools
+RUN python -m pip install --upgrade pip setuptools wheel build
+
+# Build the package
+RUN python -m build
+
+# Command to display the built files
+CMD ["cmd", "/c", "dir", "dist\\"]
