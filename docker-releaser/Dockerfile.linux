@@ -16,7 +16,4 @@ COPY . .
 RUN pip install --upgrade pip setuptools wheel build
 
 # Build the package
-RUN python -m build
-
-# Command to display the built files
-CMD ["ls", "-l", "dist/"]
+RUN python -m build --wheel

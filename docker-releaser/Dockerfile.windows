@@ -1,13 +1,24 @@
 # Filename: Dockerfile.windows
-# Use a Windows Server Core as the base image with Python installed
 ARG PYTHON_VERSION=3.11
 FROM mcr.microsoft.com/windows/servercore:ltsc2022
 
-# Install Python
-SHELL ["powershell", "-Command"]
-RUN Invoke-WebRequest -Uri "https://www.python.org/ftp/python/$env:PYTHON_VERSION/python-$env:PYTHON_VERSION-amd64.exe" -OutFile "python-installer.exe" ; \
-    Start-Process "python-installer.exe" -ArgumentList '/quiet InstallAllUsers=1 PrependPath=1' -NoNewWindow -Wait ; \
-    Remove-Item -Force "python-installer.exe"
+# Install Python using the official Python installer
+SHELL ["cmd", "/S", "/C"]
+
+# Install Chocolatey (a Windows package manager)
+RUN powershell -NoProfile -InputFormat None -ExecutionPolicy Bypass -Command \
+    Set-ExecutionPolicy Bypass -Scope Process -Force; \
+    [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072; \
+    iex ((New-Object System.Net.WebClient).DownloadString('https://community.chocolatey.org/install.ps1'))
+
+# Install build dependencies (equivalent to Linux's `build-essential` and other packages)
+RUN choco install python --version=%PYTHON_VERSION% -y && \
+    choco install visualstudio2019buildtools -y && \
+    choco install windows-sdk-10.0 -y && \
+    choco install cmake -y
+
+# Add Python to the PATH
+RUN setx PATH "%PATH%;C:\Python%PYTHON_VERSION%\Scripts;C:\Python%PYTHON_VERSION%"
 
 # Set working directory
 WORKDIR C:/app
@@ -15,11 +26,8 @@ WORKDIR C:/app
 # Copy the package source code into the container
 COPY . .
 
-# Install build tools
+# Install pip, setuptools, and wheel
 RUN python -m pip install --upgrade pip setuptools wheel build
 
-# Build the package
-RUN python -m build
-
-# Command to display the built files
-CMD ["cmd", "/c", "dir", "dist\\"]
+# Build the Python package (wheel)
+RUN python -m build --wheel
