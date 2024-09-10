@@ -358,6 +358,7 @@ def pypi_release(opts, pargs):
 
     db_warning = "Warning: No new distribution build. This occurs when there are no new changes to the source code since the previous release. Please check for any untracked changes and update your package changelog/release-history to reflect the newest version."
     build_wheel = not opts.no_wheel
+    
     # Build wheel and source
     if build_wheel:
         call("python -m build", release_dir) 
