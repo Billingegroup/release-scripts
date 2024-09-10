@@ -53,63 +53,54 @@ def create_option_parser():
     vsn_group.add_option(
         "--changelog",
         action="store_true",
-        dest="changelog",
         help="Combine all update files in the news directory into a single changelog file."
     )
     
     vsn_group.add_option(
         "--cl-file",
         metavar="FILEPATH",
-        dest="cl_file",
         help="Name (and path if not in root) of changelog file. Default \'CHANGELOG.rst\'"
     )
     
     vsn_group.add_option(
         "--cl-news",
         metavar="NEWSDIR",
-        dest="cl_news",
         help="Location of news directory. Default is \'news\' in the root directory."
     )
     
     vsn_group.add_option(
         "--cl-template",
         metavar="TEMPLATE",
-        dest="cl_template",
         help="Name of template file. One will be auto-generated if one does not exist. Default \'TEMPLATE.rst\'."
     )
     
     vsn_group.add_option(
         "--cl-categories",
         metavar="CATLIST",
-        dest="cl_categories",
         help="List of categories to include in the changelog. Default \'Added, Changed, Deprecated, Removed, Fixed, Security\'."
     )
     
     vsn_group.add_option(
         "--cl-ignore",
         metavar="FILELIST",
-        dest="cl_ignore",
         help="List of files in news to ignore. The template file is always ignored."
     )
     
     vsn_group.add_option(
         "--cl-access-point",
         metavar="APSTRING",
-        dest="cl_access_point",
         help="All changes will be put in the change log after the access point. Default \'.. current developments\'."
     )
     
     vsn_group.add_option(
         "--tag",
         action="store_true",
-        dest="tag",
         help="Create and push a version tag to GitHub."
     )
     
     vsn_group.add_option(
         "--upstream",
         action="store_true",
-        dest="upstream",
         help="Push to upstream rather than origin."
     )
     
@@ -123,42 +114,36 @@ def create_option_parser():
     rel_group.add_option(
         "--release",
         action="store_true",
-        dest="release",
         help="Update the changelog, push the tag, upload to Github, and upload to PyPi."
     )
     
     rel_group.add_option(
         "--pre-release",
         action="store_true",
-        dest="pre_release",
         help="Push the tag, upload to Github, and upload to PyPi."
     )
     
     rel_group.add_option(
         "--github",
         action="store_true",
-        dest="github",
         help="Initiate a release on GitHub."
     )
     
     rel_group.add_option(
         "--gh-title",
         metavar="TITLE",
-        dest="gh_title",
         help="Title of GitHub release."
     )
     
     rel_group.add_option(
         "--gh-notes",
         metavar="NOTES",
-        dest="gh_notes",
         help="Release notes to be posted for GitHub release."
     )
     
     rel_group.add_option(
         "--pypi",
         action="store_true",
-        dest="pypi",
         help="Initiate a release on PyPi. Default is to upload the source distribution. Use the --wheel option to also build a wheel using python-build."
     )
     
