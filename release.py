@@ -148,7 +148,7 @@ def create_option_parser():
     )
 
     rel_group.add_option(
-        "--c",
+        "-c", "--c",
         action="store_true",
         help="Configure to release a project with C/C++ extension" 
     )
