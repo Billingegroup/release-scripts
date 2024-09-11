@@ -146,11 +146,17 @@ def create_option_parser():
         action="store_true",
         help="Initiate a release on PyPi. Default is to upload the source distribution. Use the --wheel option to also build a wheel using python-build."
     )
-    
+
+    rel_group.add_option(
+        "-c", "--c",
+        action="store_true",
+        help="Configure to release a project with C/C++ extension" 
+    )
+
     rel_group.add_option(
         "--no-wheel",
         action="store_true",
-        help="Build a wheel and a source distribution for the PyPi release."
+        help="Provide source distribution only for the PyPi release."
     )
 
     rel_group.add_option(
@@ -335,13 +341,15 @@ def github_release(opts, pargs):
     
     # Cleanup
     call(f"rm -rf {tmp_dir}", release_dir)
-        
+
+   
 def pypi_release(opts, pargs):
     release_dir = pargs[0]
     version = pargs[1]
 
     db_warning = "Warning: No new distribution build. This occurs when there are no new changes to the source code since the previous release. Please check for any untracked changes and update your package changelog/release-history to reflect the newest version."
-    build_wheel = False if opts.no_wheel is True else build_wheel = True
+    build_wheel = not opts.no_wheel
+  
     # Build wheel and source
     if build_wheel:
         call("python -m build", release_dir) 
@@ -361,7 +369,7 @@ def pypi_release(opts, pargs):
             call(f"twine upload dist/*{version}*.tar.gz dist/*{version}*.whl", release_dir)
 
     # Only upload source
-    else:
+    elif not build_wheel:
         call("python -m build --sdist", release_dir)
         # Upload using twine
         no_tar = True
@@ -372,7 +380,6 @@ def pypi_release(opts, pargs):
             call(f"echo \"{db_warning}\"", release_dir)
         else:
             call(f"twine upload dist/*{version}*.tar.gz", release_dir)
-
 
 # Generate SHA256 Hash for a Conda-Forge Release
 def cf_hash(opts, pargs):
@@ -430,6 +437,10 @@ if __name__ == "__main__":
 
     if opts.release and opts.pre_release:
         parser.error("Both release and pre-release specified. Please re-run the command specifying either release or pre_release.")
+    
+    # Linking --c to set --no-wheel for project with C/C++ extension
+    if opts.c:
+        opts.no_wheel = True
 
     # Set release directory to absolute path
     pargs[0] = Path(pargs[0]).resolve()
@@ -444,6 +455,7 @@ if __name__ == "__main__":
         opts.tag = True
         opts.github = True
         opts.pypi = True
+
     if opts.changelog:
         update_changelog(opts, pargs)
     if opts.tag:
