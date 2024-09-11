@@ -363,7 +363,7 @@ def pypi_release(opts, pargs):
             call(f"twine upload dist/*{version}*.tar.gz dist/*{version}*.whl", release_dir)
 
     # Only upload source
-    else:
+    elif not build_wheel:
         call("python -m build --sdist", release_dir)
         # Upload using twine
         no_tar = True
