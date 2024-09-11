@@ -438,7 +438,7 @@ if __name__ == "__main__":
     if opts.release and opts.pre_release:
         parser.error("Both release and pre-release specified. Please re-run the command specifying either release or pre_release.")
     
-    # Linking --c to set --no-wheel
+    # Linking --c to set --no-wheel for project with C/C++ extension
     if opts.c:
         opts.no_wheel = True
 
