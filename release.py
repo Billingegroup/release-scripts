@@ -146,9 +146,15 @@ def create_option_parser():
         action="store_true",
         help="Initiate a release on PyPi. Default is to upload the source distribution. Use the --wheel option to also build a wheel using python-build."
     )
-    
+
     rel_group.add_option(
-        "-c", "--c", "--no-wheel",
+        "--c",
+        action="store_true",
+        help="Configure to release a project with C/C++ extension" 
+    )
+
+    rel_group.add_option(
+        "--no-wheel",
         action="store_true",
         help="Provide source distribution only for the PyPi release."
     )
@@ -431,6 +437,10 @@ if __name__ == "__main__":
 
     if opts.release and opts.pre_release:
         parser.error("Both release and pre-release specified. Please re-run the command specifying either release or pre_release.")
+    
+    # Linking --c to set --no-wheel
+    if opts.c:
+        opts.no_wheel = True
 
     # Set release directory to absolute path
     pargs[0] = Path(pargs[0]).resolve()
@@ -445,6 +455,7 @@ if __name__ == "__main__":
         opts.tag = True
         opts.github = True
         opts.pypi = True
+
     if opts.changelog:
         update_changelog(opts, pargs)
     if opts.tag:
