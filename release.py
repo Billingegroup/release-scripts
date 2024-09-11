@@ -148,7 +148,7 @@ def create_option_parser():
     )
     
     rel_group.add_option(
-        "--no-wheel",
+        "-c", "--no-wheel",
         action="store_true",
         help="Provide source distribution only for the PyPi release."
     )
