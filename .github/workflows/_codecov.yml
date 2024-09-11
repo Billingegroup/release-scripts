@@ -1,0 +1,75 @@
+name: Gather coverage report and upload to codecov
+
+on:
+  workflow_call:
+    inputs:
+      project:
+        description: 'Name of the project to test'
+        default: 'PROJECT_NAME'
+        required: false
+        type: string
+      c_extension:
+        description: 'Whether the project has a C extension'
+        default: false
+        required: false
+        type: boolean
+      headless:
+        description: 'Whether to run headless tests'
+        default: false
+        required: false
+        type: boolean
+
+jobs:
+  coverage:
+    defaults:
+      run:
+        shell: bash -l {0}
+
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out ${{ inputs.project }}
+        uses: actions/checkout@v4
+
+      - name: Initialize miniconda
+        uses: conda-incubator/setup-miniconda@v3
+        with:
+          activate-environment: test
+          auto-update-conda: true
+          environment-file: environment.yml
+          auto-activate-base: false
+
+      - name: Conda config
+        run: >-
+          conda config --set always_yes yes
+          --set changeps1 no
+
+      - name: Install ${{ inputs.project }} and requirements
+        run: |
+          conda install --file requirements/run.txt
+          conda install --file requirements/test.txt
+          if ${{ inputs.c_extension }}; then
+            conda install --file requirements/build.txt
+          fi
+          python -m pip install -r requirements/pip.txt
+          python -m pip install . --no-deps
+
+      - name: Start Xvfb
+        if: ${{ inputs.headless }}
+        run: |
+          sudo apt-get install -y xvfb
+          export DISPLAY=:99
+          Xvfb :99 -screen 0 1024x768x16 &
+
+      - name: Validate ${{ inputs.project }}
+        run: |
+          if ${{ inputs.headless }}; then
+            xport DISPLAY=:99
+          fi
+          coverage run -m pytest -vv -s
+          coverage report -m
+          codecov
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v4
+        env:
+          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}

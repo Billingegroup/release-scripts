@@ -1,0 +1,16 @@
+name: Test
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  validate:
+    uses: Billingegroup/release-scripts/.github/workflows/_main.yml@main
+    with:
+      project: PROJECT_NAME
+      c_extension: false
+      headless: false
