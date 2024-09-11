@@ -32,7 +32,11 @@ def get_user_input(prompt, default, param_name):
         return user_input_cache[param_name]
 
     user_value = input(f"{prompt} (default: {default}): ").strip()
-    if user_value:
+    if user_value.lower() == 'false':
+        value = False
+    elif user_value.lower() == 'true':
+        value = True
+    elif user_value:
         value = user_value
     else:
         value = default
