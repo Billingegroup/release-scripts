@@ -1,0 +1,19 @@
+name: Gather coverage report and upload to codecov
+
+on:
+  push:
+    branches:
+      - main
+  release:
+    types:
+      - prereleased
+      - published
+  workflow_dispatch: null
+
+jobs:
+  coverage:
+    uses: Billingegroup/release-scripts/.github/workflows/_codecov.yml@main
+    with:
+      project: PROJECT_NAME
+      c_extension: false
+      headless: false
