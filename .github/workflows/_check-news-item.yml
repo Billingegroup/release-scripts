@@ -1,0 +1,38 @@
+name: Check News Item
+
+on:
+  workflow_call:
+    inputs:
+      project:
+        description: 'Name of the project to test'
+        default: 'PROJECT_NAME'
+        required: false
+        type: string
+
+jobs:
+  build:
+    permissions:
+      pull-requests: write
+      contents: read
+
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out ${{ inputs.project }}
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: 'pip'
+          cache-dependency-path: 'pyproject.toml'
+
+      - name: what name?
+        run: |
+          pip install PyGithub
+          wget https://api.github.com/repos/Billingegroup/release-scripts/contents/.github/workflows/check-news.py
+          python check-news.py
+        env:
+          PR_NUMBER: "${{ github.event.number }}"
+          GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
+          GITHUB_REPOSITORY: "${{ env.GITHUB_REPOSITORY }}"
