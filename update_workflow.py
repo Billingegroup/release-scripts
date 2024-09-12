@@ -3,6 +3,17 @@
 from pathlib import Path
 import requests
 import yaml
+from yamlcore import CoreLoader, CoreDumper
+
+""" This script fetches the latest workflows from the central repository 'release-scripts' and updates the local dummy workflows. Before running the script, install the required packages using the following command:
+
+    conda install yaml requests
+    pip install yamlcore
+
+    This script assumes you are in the 'release-scripts' repository, and the package repository has the same parent directory as 'release-scripts'. You can change this by modifying the 'LOCAL_WORKFLOW_DIR' variable. 
+
+    Sometimes there would be timeout errors while fetching the workflows from the central repository. In such cases, you can try running the script again.
+"""
 
 proj = input(f"Enter project name (default: {'PROJECT_NAME'}): ").strip() or 'PROJECT_NAME'
 
@@ -59,11 +70,11 @@ def update_local_workflows(central_workflows):
 
     for name, content in central_workflows.items():
         local_file = LOCAL_WORKFLOW_DIR / name
-        central_yaml = yaml.safe_load(content)
+        central_yaml = yaml.load(content, Loader=CoreLoader)
 
         central_yaml = update_workflow_params(central_yaml)
         with open(local_file, 'w', encoding='utf-8') as file:
-            yaml.dump(central_yaml, file, sort_keys=False)
+            yaml.dump(central_yaml, file, Dumper=CoreDumper, sort_keys=False)
 
     for name in local_workflows - central_workflow_names:
         (LOCAL_WORKFLOW_DIR / name).unlink()
