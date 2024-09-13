@@ -27,10 +27,10 @@ jobs:
           cache: 'pip'
           cache-dependency-path: 'pyproject.toml'
 
-      - name: what name?
+      - name: Check News Item
         run: |
           pip install PyGithub
-          wget https://api.github.com/repos/Billingegroup/release-scripts/contents/.github/workflows/check-news.py
+          wget https://raw.githubusercontent.com/Billingegroup/release-scripts/main/.github/workflows/check-news.py
           python check-news.py
         env:
           PR_NUMBER: "${{ github.event.number }}"
