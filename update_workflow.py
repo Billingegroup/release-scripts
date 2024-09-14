@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+import os
 from pathlib import Path
 import requests
 import yaml
@@ -17,10 +18,12 @@ from yamlcore import CoreLoader, CoreDumper
 
 proj = input(f"Enter project name (default: {'PROJECT_NAME'}): ").strip() or 'PROJECT_NAME'
 
+pwd = os.path.dirname(__file__)
+
 CENTRAL_REPO_ORG = "Billingegroup"
 CENTRAL_REPO_NAME = "release-scripts"
 CENTRAL_WORKFLOW_DIR = ".github/workflows/templates"
-LOCAL_WORKFLOW_DIR = Path("../"+proj+"/.github/workflows")
+LOCAL_WORKFLOW_DIR = Path(pwd + "/../"+proj+"/.github/workflows")
 
 user_input_cache = {'project': proj}
 
@@ -75,6 +78,14 @@ def update_local_workflows(central_workflows):
         central_yaml = update_workflow_params(central_yaml)
         with open(local_file, 'w', encoding='utf-8') as file:
             yaml.dump(central_yaml, file, Dumper=CoreDumper, sort_keys=False)
+        
+        with open(local_file, 'r', encoding='utf-8') as file:
+            content = file.read()
+        parts = content.split('jobs', 1)
+        parts[0] = parts[0].replace('-', '  -')
+        content = 'jobs'.join(parts)
+        with open(local_file, 'w', encoding='utf-8') as file:
+            file.write(content)
 
     for name in local_workflows - central_workflow_names:
         (LOCAL_WORKFLOW_DIR / name).unlink()
