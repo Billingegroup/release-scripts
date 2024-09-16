@@ -9,7 +9,7 @@ on:
 
 jobs:
   validate:
-    uses: Billingegroup/release-scripts/.github/workflows/_main.yml@{{ VERSION/v0 }}
+    uses: Billingegroup/release-scripts/.github/workflows/_tests-on-pr.yml@{{ VERSION/v0 }}
     with:
       project: {{ PROJECT/PROJECT_NAME }}
       c_extension: {{ C_EXTENSION/false }}
