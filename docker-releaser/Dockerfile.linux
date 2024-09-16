@@ -1,0 +1,19 @@
+# Filename: Dockerfile.linux
+ARG PYTHON_VERSION=3.11
+FROM python:${PYTHON_VERSION}-slim
+
+# Install build dependencies
+RUN apt-get update && \
+    apt-get install -y build-essential python3-dev libgsl-dev
+
+# Set working directory
+WORKDIR /usr/src/app
+
+# Copy the package source code into the container
+COPY . .
+
+# Install build tools
+RUN pip install --upgrade pip setuptools wheel build
+
+# Build the package
+RUN python -m build --wheel

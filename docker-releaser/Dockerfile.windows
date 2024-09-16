@@ -1,0 +1,33 @@
+# Filename: Dockerfile.windows
+ARG PYTHON_VERSION=3.11
+FROM mcr.microsoft.com/windows/servercore:ltsc2022
+
+# Install Python using the official Python installer
+SHELL ["cmd", "/S", "/C"]
+
+# Install Chocolatey (a Windows package manager)
+RUN powershell -NoProfile -InputFormat None -ExecutionPolicy Bypass -Command \
+    Set-ExecutionPolicy Bypass -Scope Process -Force; \
+    [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072; \
+    iex ((New-Object System.Net.WebClient).DownloadString('https://community.chocolatey.org/install.ps1'))
+
+# Install build dependencies (equivalent to Linux's `build-essential` and other packages)
+RUN choco install python --version=%PYTHON_VERSION% -y && \
+    choco install visualstudio2019buildtools -y && \
+    choco install windows-sdk-10.0 -y && \
+    choco install cmake -y
+
+# Add Python to the PATH
+RUN setx PATH "%PATH%;C:\Python%PYTHON_VERSION%\Scripts;C:\Python%PYTHON_VERSION%"
+
+# Set working directory
+WORKDIR C:/app
+
+# Copy the package source code into the container
+COPY . .
+
+# Install pip, setuptools, and wheel
+RUN python -m pip install --upgrade pip setuptools wheel build
+
+# Build the Python package (wheel)
+RUN python -m build --wheel
