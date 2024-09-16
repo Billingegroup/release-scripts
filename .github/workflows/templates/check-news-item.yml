@@ -7,6 +7,6 @@ on:
 
 jobs:
   build:
-    uses: Billingegroup/release-scripts/.github/workflows/_check-news-item.yml@main
+    uses: Billingegroup/release-scripts/.github/workflows/_check-news-item.yml@{{ VERSION/v0 }}
     with:
-      project: PROJECT_NAME
+      project: {{ PROJECT/PROJECT_NAME }}

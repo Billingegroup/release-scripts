@@ -12,8 +12,8 @@ on:
 
 jobs:
   coverage:
-    uses: Billingegroup/release-scripts/.github/workflows/_codecov.yml@main
+    uses: Billingegroup/release-scripts/.github/workflows/_codecov.yml@{{ VERSION/v0 }}
     with:
-      project: PROJECT_NAME
-      c_extension: false
-      headless: false
+      project: {{ PROJECT/PROJECT_NAME }}
+      c_extension: {{ C_EXTENSION/false }}
+      headless: {{ HEADLESS/false }}
