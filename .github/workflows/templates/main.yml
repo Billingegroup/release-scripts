@@ -9,8 +9,8 @@ on:
 
 jobs:
   validate:
-    uses: Billingegroup/release-scripts/.github/workflows/_main.yml@main
+    uses: Billingegroup/release-scripts/.github/workflows/_main.yml@{{ VERSION/v0 }}
     with:
-      project: PROJECT_NAME
-      c_extension: false
-      headless: false
+      project: {{ PROJECT/PROJECT_NAME }}
+      c_extension: {{ C_EXTENSION/false }}
+      headless: {{ HEADLESS/false }}

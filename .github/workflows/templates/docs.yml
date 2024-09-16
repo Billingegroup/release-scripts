@@ -8,7 +8,7 @@ on:
 
 jobs:
   docs:
-    uses: Billingegroup/release-scripts/.github/workflows/_docs.yml@main
+    uses: Billingegroup/release-scripts/.github/workflows/_docs.yml@{{ VERSION/v0 }}
     with:
-      project: PROJECT_NAME
-      c_extension: false
+      project: {{ PROJECT/PROJECT_NAME }}
+      c_extension: {{ C_EXTENSION/false }}
