@@ -65,7 +65,7 @@ jobs:
           if ${{ inputs.headless }}; then
             xport DISPLAY=:99
           fi
-          coverage run -m pytest -vv -s
+          pytest --cov
           coverage report -m
           codecov
 
