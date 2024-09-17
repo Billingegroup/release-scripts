@@ -1,4 +1,4 @@
-name: Gather coverage report and upload to codecov
+name: CI
 
 on:
   workflow_call:

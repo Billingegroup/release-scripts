@@ -1,4 +1,4 @@
-name: Check News Item
+name: Check for News
 
 on:
   workflow_call:
