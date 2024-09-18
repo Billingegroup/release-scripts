@@ -18,6 +18,10 @@ on:
         default: false
         required: false
         type: boolean
+    secrets:
+      CODECOV_TOKEN:
+        description: 'Codecov token'
+        required: true
 
 jobs:
   coverage:
