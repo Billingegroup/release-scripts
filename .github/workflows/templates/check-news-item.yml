@@ -1,4 +1,4 @@
-name: Check News Item
+name: Check for News
 
 on:
   pull_request_target:

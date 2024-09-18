@@ -1,4 +1,4 @@
-name: Gather coverage report and upload to codecov
+name: CI
 
 on:
   push:
@@ -17,3 +17,4 @@ jobs:
       project: {{ PROJECT/PROJECT_NAME }}
       c_extension: {{ C_EXTENSION/false }}
       headless: {{ HEADLESS/false }}
+    secrets: inherit

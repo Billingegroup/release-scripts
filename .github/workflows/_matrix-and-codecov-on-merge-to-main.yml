@@ -1,4 +1,4 @@
-name: Gather coverage report and upload to codecov
+name: CI
 
 on:
   workflow_call:
@@ -65,7 +65,7 @@ jobs:
           if ${{ inputs.headless }}; then
             xport DISPLAY=:99
           fi
-          coverage run -m pytest -vv -s
+          pytest --cov
           coverage report -m
           codecov
 
