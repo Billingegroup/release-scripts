@@ -17,4 +17,5 @@ jobs:
       project: {{ PROJECT/PROJECT_NAME }}
       c_extension: {{ C_EXTENSION/false }}
       headless: {{ HEADLESS/false }}
-    secrets: inherit
+    secrets:
+      CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
