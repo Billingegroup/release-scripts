@@ -41,18 +41,20 @@ def main():
     has_news_added = check_news_file(pr)
     old_comment = get_old_comment(pr)
 
-    if old_comment:
-        print("Found an existing comment from bot")
-        if has_news_added:
-            print("Delete warning from bot, since news items is added.")
+    if has_news_added:
+        if old_comment:
+            print("Found an existing comment from bot")
+            print("Delete warning from bot, since news item is added.")
             old_comment.delete()
-    elif not has_news_added:
+    else:
         print("No news item found")
-
-        pr.create_issue_comment(
-            """\
-**Warning!** No news item is found for this PR. If this is an user facing change/feature/fix,
- please add a news item by copying the format from `news/TEMPLATE.rst`.
+        if old_comment:
+            print("Old warning remains relevant, no action needed.")
+        else:
+            pr.create_issue_comment(
+                """\
+**Warning!** No news item is found for this PR. If this is a user-facing change/feature/fix,
+please add a news item by copying the format from `news/TEMPLATE.rst`.
 """
         )
         assert False
