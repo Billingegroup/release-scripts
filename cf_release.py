@@ -2,7 +2,8 @@ import sys
 import requests
 import subprocess
 from os.path import join, exists, dirname
-from click import prompt, confirm
+import click
+from click import prompt, confirm, Choice
 
 """
 This script streamlines the process of updating Python package versions and
@@ -111,7 +112,7 @@ def update_meta_yaml(meta_file_path, new_version, new_sha256):
             file.write(line)
 
 
-def run_gh_shell_command(cwd, meta_file_path, version, SHA256, username, package_name):
+def run_gh_shell_command(cwd, meta_file_path, version, SHA256, username, package_name, release_type):
     """
     Create a PR from a branch name of <new_version>
     to the main branch of the feedstock repository.
@@ -135,9 +136,10 @@ def run_gh_shell_command(cwd, meta_file_path, version, SHA256, username, package
     # Push the new branch to your origin repository
     run_command(f"git push origin {version}", cwd=cwd)
 
-    # Explicit set <username>-<packagne_name>-feedstock as the default repo
-    # for GitHub CLI
-    run_command(f"gh repo set-default conda-forge/{package_name}-feedstock", cwd=cwd)
+    # Set the branch
+    branch = "main" if release_type == "release" else "rc"
+
+    run_command(f"gh repo set-default conda-forge/{package_name}-feedstock --branch {branch}", cwd=cwd)
 
     # Create a pull request using GitHub CLI
     pr_command = (
@@ -182,9 +184,7 @@ GitHub Integration
 def get_github_username():
     """Get the GitHub username using the GitHub CLI."""
     try:
-        username = subprocess.check_output(
-            ["gh", "api", "user", "--jq", ".login"], text=True
-        ).strip()
+        username = subprocess.check_output(["gh", "api", "user", "--jq", ".login"], text=True).strip()
         return username
     except subprocess.CalledProcessError:
         raise RuntimeError(
@@ -193,16 +193,26 @@ def get_github_username():
         )
 
 
+@click.command()
+@click.option(
+    "--version",
+    type=click.Choice(["1", "2"]),
+    prompt="\nQ. Would you like to (1) release or (2) pre-release on conda-forge?",
+)
+def prompt_release_type(version):
+    release_type = "release" if version == "1" else "pre-release"
+    print("You've selected:", release_type)
+    return release_type
+
+
 """
 Main Entry Point
 """
 
 
 def main():
-    # Q1 Ask the package name from the user
-    package_name = prompt(
-        "Q1. Please enter the PyPI package name Ex) diffpy.pdfgui", type=str
-    )
+    release_type = prompt_release_type()
+    package_name = prompt("Q1. Please enter the PyPI package name Ex) diffpy.pdfgui", type=str)
 
     # Get path to feedstock directory and meta.yaml file
     fd_stock_dir_path, meta_file_path = get_feedstock_and_meta_file_path(package_name)
@@ -222,8 +232,7 @@ def main():
         new_version = prompt("Please enter the version you would like to use", type=str)
         while new_version not in pypi_version_info:
             new_version = prompt(
-                f"ERROR: {new_version} is not available in the list of versions. "
-                "Please re-enter",
+                f"ERROR: {new_version} is not available in the list of versions. " "Please re-enter",
                 type=str,
             )
 
@@ -240,7 +249,7 @@ def main():
 
     # Run the shell command to update the .yml file and create a PR
     run_gh_shell_command(
-        fd_stock_dir_path, meta_file_path, new_version, SHA256, username, package_name
+        fd_stock_dir_path, meta_file_path, new_version, SHA256, username, package_name, release_type
     )
 
 
