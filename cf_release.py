@@ -202,12 +202,12 @@ def get_github_username():
 
 @click.command()
 @click.option(
-    "--version",
+    "--choice",
     type=click.Choice(["1", "2"]),
     prompt="\nQ. Would you like to (1) release or (2) pre-release on conda-forge?",
 )
-def prompt_release_type(version):
-    release_type = "release" if version == "1" else "pre-release"
+def prompt_release_type(choice):
+    release_type = "release" if choice == "1" else "pre-release"
     print("You've selected:", release_type)
     return release_type
 
