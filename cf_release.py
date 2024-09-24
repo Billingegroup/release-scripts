@@ -112,7 +112,9 @@ def update_meta_yaml(meta_file_path, new_version, new_sha256):
             file.write(line)
 
 
-def run_gh_shell_command(cwd, meta_file_path, version, SHA256, username, package_name, release_type):
+def run_gh_shell_command(
+    cwd, meta_file_path, version, SHA256, username, package_name, release_type
+):
     """
     Create a PR from a branch name of <new_version>
     to the main branch of the feedstock repository.
@@ -139,7 +141,10 @@ def run_gh_shell_command(cwd, meta_file_path, version, SHA256, username, package
     # Set the branch
     branch = "main" if release_type == "release" else "rc"
 
-    run_command(f"gh repo set-default conda-forge/{package_name}-feedstock --branch {branch}", cwd=cwd)
+    run_command(
+        f"gh repo set-default conda-forge/{package_name}-feedstock --branch {branch}",
+        cwd=cwd,
+    )
 
     # Create a pull request using GitHub CLI
     pr_command = (
@@ -184,7 +189,9 @@ GitHub Integration
 def get_github_username():
     """Get the GitHub username using the GitHub CLI."""
     try:
-        username = subprocess.check_output(["gh", "api", "user", "--jq", ".login"], text=True).strip()
+        username = subprocess.check_output(
+            ["gh", "api", "user", "--jq", ".login"], text=True
+        ).strip()
         return username
     except subprocess.CalledProcessError:
         raise RuntimeError(
@@ -212,7 +219,9 @@ Main Entry Point
 
 def main():
     release_type = prompt_release_type()
-    package_name = prompt("Q1. Please enter the PyPI package name Ex) diffpy.pdfgui", type=str)
+    package_name = prompt(
+        "Q1. Please enter the PyPI package name Ex) diffpy.pdfgui", type=str
+    )
 
     # Get path to feedstock directory and meta.yaml file
     fd_stock_dir_path, meta_file_path = get_feedstock_and_meta_file_path(package_name)
@@ -232,7 +241,8 @@ def main():
         new_version = prompt("Please enter the version you would like to use", type=str)
         while new_version not in pypi_version_info:
             new_version = prompt(
-                f"ERROR: {new_version} is not available in the list of versions. " "Please re-enter",
+                f"ERROR: {new_version} is not available in the list of versions. "
+                "Please re-enter",
                 type=str,
             )
 
@@ -249,7 +259,13 @@ def main():
 
     # Run the shell command to update the .yml file and create a PR
     run_gh_shell_command(
-        fd_stock_dir_path, meta_file_path, new_version, SHA256, username, package_name, release_type
+        fd_stock_dir_path,
+        meta_file_path,
+        new_version,
+        SHA256,
+        username,
+        package_name,
+        release_type,
     )
 
 
