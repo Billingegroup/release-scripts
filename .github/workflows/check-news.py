@@ -17,7 +17,9 @@ def get_added_files(pr: PullRequest.PullRequest):
 
 
 def check_news_file(pr):
-    return any(map(lambda file_name: fnmatch(file_name, "news/*.rst"), get_added_files(pr)))
+    return any(
+        map(lambda file_name: fnmatch(file_name, "news/*.rst"), get_added_files(pr))
+    )
 
 
 def get_pr_number():
@@ -29,7 +31,9 @@ def get_pr_number():
 
 def get_old_comment(pr: PullRequest.PullRequest):
     for comment in pr.get_issue_comments():
-        if ("github-actions" in comment.user.login) and ("No news item is found" in comment.body):
+        if ("github-actions" in comment.user.login) and (
+            "No news item is found" in comment.body
+        ):
             return comment
 
 
@@ -56,7 +60,7 @@ def main():
 **Warning!** No news item is found for this PR. If this is a user-facing change/feature/fix,
 please add a news item by copying the format from `news/TEMPLATE.rst`.
 """
-        )
+            )
         assert False
 
 
