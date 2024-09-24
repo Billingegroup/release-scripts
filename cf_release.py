@@ -1,9 +1,10 @@
-import sys
-import requests
 import subprocess
-from os.path import join, exists, dirname
+import sys
+from os.path import dirname, exists, join
+
 import click
-from click import prompt, confirm, Choice
+import requests
+from click import confirm, prompt
 
 """
 This script streamlines the process of updating Python package versions and
