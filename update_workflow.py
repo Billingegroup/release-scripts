@@ -1,22 +1,23 @@
 #!/usr/bin/env python
 
 """
-This script fetches the latest workflows from the central repository 'release-scripts' 
-and updates the local dummy workflows. Before running the script, install the required 
+This script fetches the latest workflows from the central repository 'release-scripts'
+and updates the local dummy workflows. Before running the script, install the required
 packages using the following command:
 
     conda install requests
 
-This script assumes the package repository has the same parent directory as 'release-scripts'. 
+This script assumes the package repository has the same parent directory as 'release-scripts'.
 You can change this by modifying the 'LOCAL_WORKFLOW_DIR' variable.
 
-Sometimes there would be timeout errors while fetching the workflows from the central repository. 
+Sometimes there would be timeout errors while fetching the workflows from the central repository.
 In such cases, you can try running the script again.
 """
 
 import os
 import re
 from pathlib import Path
+
 import requests
 
 proj = (
@@ -33,18 +34,22 @@ LOCAL_WORKFLOW_DIR = Path(pwd + "/../" + proj + "/.github/workflows")
 
 user_input_cache = {"PROJECT": proj}
 
+
 def get_central_workflows():
-    base_url = f"https://api.github.com/repos/{CENTRAL_REPO_ORG}/{CENTRAL_REPO_NAME}/contents/{CENTRAL_WORKFLOW_DIR}"
+    base_url = (
+        f"https://api.github.com/repos/{CENTRAL_REPO_ORG}/"
+        f"{CENTRAL_REPO_NAME}/contents/{CENTRAL_WORKFLOW_DIR}"
+    )
     response = requests.get(base_url, timeout=5)
     if response.status_code != 200:
         raise Exception(f"Failed to fetch central workflows: {response.status_code}")
 
     workflows = {}
     for file in response.json():
-        if file['type'] == 'file' and file['name'].endswith('.yml'):
-            content_response = requests.get(file['download_url'], timeout=5)
+        if file["type"] == "file" and file["name"].endswith(".yml"):
+            content_response = requests.get(file["download_url"], timeout=5)
             if content_response.status_code == 200:
-                workflows[file['name']] = content_response.text
+                workflows[file["name"]] = content_response.text
     return workflows
 
 
