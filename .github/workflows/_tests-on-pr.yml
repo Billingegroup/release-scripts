@@ -63,6 +63,7 @@ jobs:
       - name: Validate ${{ inputs.project }}
         run: |
           if ${{ inputs.headless }}; then
-            xport DISPLAY=:99
+            export DISPLAY=:99
+            
           fi
           python -m pytest
