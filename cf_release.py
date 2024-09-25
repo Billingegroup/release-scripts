@@ -1,8 +1,10 @@
-import sys
-import requests
 import subprocess
-from os.path import join, exists, dirname
-from click import prompt, confirm
+import sys
+from os.path import dirname, exists, join
+
+import click
+import requests
+from click import confirm, prompt
 
 """
 This script streamlines the process of updating Python package versions and
@@ -111,7 +113,9 @@ def update_meta_yaml(meta_file_path, new_version, new_sha256):
             file.write(line)
 
 
-def run_gh_shell_command(cwd, meta_file_path, version, SHA256, username, package_name):
+def run_gh_shell_command(
+    cwd, meta_file_path, version, SHA256, username, package_name, release_type
+):
     """
     Create a PR from a branch name of <new_version>
     to the main branch of the feedstock repository.
@@ -135,9 +139,13 @@ def run_gh_shell_command(cwd, meta_file_path, version, SHA256, username, package
     # Push the new branch to your origin repository
     run_command(f"git push origin {version}", cwd=cwd)
 
-    # Explicit set <username>-<packagne_name>-feedstock as the default repo
-    # for GitHub CLI
-    run_command(f"gh repo set-default conda-forge/{package_name}-feedstock", cwd=cwd)
+    # Set the branch
+    branch = "main" if release_type == "release" else "rc"
+
+    run_command(
+        f"gh repo set-default conda-forge/{package_name}-feedstock --branch {branch}",
+        cwd=cwd,
+    )
 
     # Create a pull request using GitHub CLI
     pr_command = (
@@ -193,13 +201,25 @@ def get_github_username():
         )
 
 
+@click.command()
+@click.option(
+    "--choice",
+    type=click.Choice(["1", "2"]),
+    prompt="\nQ. Would you like to (1) release or (2) pre-release on conda-forge?",
+)
+def prompt_release_type(choice):
+    release_type = "release" if choice == "1" else "pre-release"
+    print("You've selected:", release_type)
+    return release_type
+
+
 """
 Main Entry Point
 """
 
 
 def main():
-    # Q1 Ask the package name from the user
+    release_type = prompt_release_type()
     package_name = prompt(
         "Q1. Please enter the PyPI package name Ex) diffpy.pdfgui", type=str
     )
@@ -240,7 +260,13 @@ def main():
 
     # Run the shell command to update the .yml file and create a PR
     run_gh_shell_command(
-        fd_stock_dir_path, meta_file_path, new_version, SHA256, username, package_name
+        fd_stock_dir_path,
+        meta_file_path,
+        new_version,
+        SHA256,
+        username,
+        package_name,
+        release_type,
     )
 
 

@@ -25,7 +25,7 @@ Options (taken from --help):
   -s SUFFIX, --suffix=SUFFIX
                         Set the environment name suffix. Environments will be named <prefix><version><suffix>. The default suffix is "-env".
 
-  --vreqs               Indicate that the requirements to be installed are version-specific. This changes the behavior of the inputs for 
+  --vreqs               Indicate that the requirements to be installed are version-specific. This changes the behavior of the inputs for
                         --requirements and --pip-requirements. Each now takes in an expression of the form "<prefix>[vsn]<suffix>". The program will
                         replace "[vsn]" with a version number (e.g. 3.10). For example, the input "reqs/py-[vsn]-reqs.txt" corresponds to files like
                         "reqs/py-3.10-reqs.txt".
