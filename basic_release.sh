@@ -48,7 +48,7 @@ mkdir "$tmp_release_dir"
 project_path="$(pwd)"
 project="${project_path##*/}"
 tgz_name="$project-$version.tar.gz"
-tar --exclude="./$tmp_release_dir" -zcf "./$tmp_release_dir/$tgz_name" . 
+tar --exclude="./$tmp_release_dir" -zcf "./$tmp_release_dir/$tgz_name" .
 
 # GitHub Release
 git tag $version $(git rev-parse HEAD)
