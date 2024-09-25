@@ -64,6 +64,6 @@ jobs:
         run: |
           if ${{ inputs.headless }}; then
             export DISPLAY=:99
-            
+
           fi
           python -m pytest
