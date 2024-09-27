@@ -36,7 +36,7 @@ def create_option_parser():
 
 
 def main(opts, pargs):
-    base_package_name = pargs[0].replace('-', '_')
+    base_package_name = pargs[0].replace("-", "_")
     base_package_dir = Path(pargs[1]).resolve()
     api_dir = Path(pargs[2]).resolve()
 
