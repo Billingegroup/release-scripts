@@ -36,7 +36,7 @@ def create_option_parser():
 
 
 def main(opts, pargs):
-    base_package_name = pargs[0]
+    base_package_name = pargs[0].replace('-', '_')
     base_package_dir = Path(pargs[1]).resolve()
     api_dir = Path(pargs[2]).resolve()
 
@@ -63,7 +63,7 @@ def main(opts, pargs):
         eq_spacing = "=" * len(f"{package_name} package")
         s = f""":tocdepth: -1
 
-{package_name} package
+{package_name.replace('_', '-')} package
 {eq_spacing}
 
 .. automodule:: {package_name}
