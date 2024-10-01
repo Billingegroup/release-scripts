@@ -50,7 +50,7 @@ jobs:
           if ${{ inputs.c_extension }}; then
             conda install --file requirements/build.txt
           fi
-          python -m pip install -r requirements/pip.txt
+          python -m pip install --only-binary :all: -r requirements/pip.txt
           python -m pip install . --no-deps
 
       - name: Start Xvfb
