@@ -41,7 +41,9 @@ jobs:
       - name: IInstall ${{ inputs.project }} and docs requirements
         run: |
           conda install --file requirements/run.txt
-          conda install --file requirements/run-ext.txt
+          if [ -f requirements/run-ext.txt ]; then
+            conda install --file requirements/run-ext.txt
+          fi
           conda install --file requirements/docs.txt
           if ${{ inputs.c_extension }}; then
             conda install --file requirements/build.txt
