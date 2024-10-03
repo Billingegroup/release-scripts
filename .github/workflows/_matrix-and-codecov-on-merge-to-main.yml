@@ -65,7 +65,7 @@ jobs:
           python -m pip install . --no-deps
 
       - name: Start Xvfb
-        if: runner.os == 'Linux' && ${{ inputs.headless }}
+        if: matrix.os == 'ubuntu-latest' && ${{ inputs.headless }}
         run: |
           sudo apt-get install -y xvfb
           export DISPLAY=:99
