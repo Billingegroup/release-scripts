@@ -45,7 +45,6 @@ jobs:
           if ${{ inputs.c_extension }}; then
             conda install --file requirements/build.txt
           fi
-          python -m pip install -r requirements/pip.txt
           python -m pip install . --no-deps
 
       - name: build documents
