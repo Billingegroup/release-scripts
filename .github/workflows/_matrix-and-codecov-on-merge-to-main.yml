@@ -56,7 +56,7 @@ jobs:
 
       - name: Install ${{ inputs.project }} and requirements
         run: |
-          conda install --file requirements/run.txt
+          conda install --file requirements/conda.txt
           conda install --file requirements/test.txt
           if ${{ inputs.c_extension }}; then
             conda install --file requirements/build.txt
@@ -74,7 +74,7 @@ jobs:
       - name: Validate ${{ inputs.project }}
         run: |
           if ${{ inputs.headless }}; then
-            xport DISPLAY=:99
+            export DISPLAY=:99
           fi
           pytest --cov
           coverage report -m
