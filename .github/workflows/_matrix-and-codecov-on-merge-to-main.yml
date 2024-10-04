@@ -73,7 +73,7 @@ jobs:
           
       - name: Validate ${{ inputs.project }}
         run: |
-          if [[ "${{ matrix.os }}" == 'ubuntu-latest' && "${{ inputs.headless }}" == 'true' ]]; then
+          if [[ "${{ matrix.os }}" == "ubuntu-latest" && "${{ inputs.headless }}" == "true" ]]; then
             export DISPLAY=:99
           fi
           pytest --cov
