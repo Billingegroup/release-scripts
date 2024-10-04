@@ -64,13 +64,13 @@ jobs:
           fi
           python -m pip install . --no-deps
 
-      - name: Start Xvfb
-        if: matrix.os == 'ubuntu-latest' && ${{ inputs.headless }}
+      - name: Start Xvfb for ubuntu-latest only
+        if: matrix.os == 'ubuntu-latest' && inputs.headless
         run: |
           sudo apt-get install -y xvfb
           export DISPLAY=:99
           Xvfb :99 -screen 0 1024x768x16 &
-
+          
       - name: Validate ${{ inputs.project }}
         run: |
           if [ "$RUNNER_OS" == "Linux" ] && ${{ inputs.headless }}; then
