@@ -34,7 +34,7 @@ jobs:
       - name: Update CHANGELOG.rst with the latest news
        # FIXME: release to main, and bobleesj to Billinge
         run: |
-          wget https://raw.githubusercontent.com/bobleesj/release-scripts/release/.github/workflows/update-changelog.py
+          wget https://raw.githubusercontent.com/bobleesj/release-scripts/v0/.github/workflows/update-changelog.py
           python update-changelog.py "${{ github.ref_name }}"
           rm update-changelog.py
 
@@ -68,7 +68,7 @@ jobs:
       - name: Generate GH release notes for release
         # FIXME: v0 to main, and bobleesj to Billinge
         run: |
-          wget https://raw.githubusercontent.com/bobleesj/release-scripts/release/.github/workflows/get-latest-changelog.py
+          wget https://raw.githubusercontent.com/bobleesj/release-scripts/v0/.github/workflows/get-latest-changelog.py
           python get-latest-changelog "${{ github.ref_name }}"
       - name: Release
         uses: softprops/action-gh-release@v2
