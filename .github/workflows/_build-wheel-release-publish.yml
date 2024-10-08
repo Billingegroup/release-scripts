@@ -77,9 +77,7 @@ jobs:
     needs: [build-package]
     environment:
       name: testpypi   # FIXME: change to pypi
-      url: https://test/pypi.org/p/diffpy.snmf  # FIXME: get the PyPI URL
-    permissions:
-      id-token: write
+      url: https://test/pypi.org/p/"${{ inputs.project }}"
     runs-on: ubuntu-latest
     steps:
       - uses: actions/download-artifact@v4

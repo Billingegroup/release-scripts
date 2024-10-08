@@ -6,7 +6,6 @@ on:
     tags:
       - '*'
 
-
 jobs:
   release:
     uses: Billingegroup/release-scripts/.github/workflows/_build-wheel-release-publish.yml@{{ VERSION/v0 }}
