@@ -9,6 +9,9 @@ on:
         required: false
         type: string
 
+permissions:
+  id-token: write
+
 jobs:
   build-package:
     runs-on: ubuntu-latest
@@ -52,7 +55,6 @@ jobs:
           draft: true
           prerelease: true
           generate_release_notes: true
-          token: ${{ secrets.GITHUB_TOKEN }}
 
   github-release:
     needs: [build-package, update-changelog]
