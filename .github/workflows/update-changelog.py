@@ -54,7 +54,11 @@ def write_merged_file():
 
     # Find the position to insert news after ".. current developments"
     insert_position = current_content.find(CHANGELOG_HEADER) + len(CHANGELOG_HEADER) + 1
-    final_content = current_content[:insert_position] + new_news_content + current_content[insert_position:]
+    final_content = (
+        current_content[:insert_position]
+        + new_news_content
+        + current_content[insert_position:]
+    )
 
     # Write the updated content back to the file
     with open(CHANGELOG_PATH, "w") as file:

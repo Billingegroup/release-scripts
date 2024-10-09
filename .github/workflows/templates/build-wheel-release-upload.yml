@@ -13,4 +13,3 @@ jobs:
       project: {{ PROJECT/PROJECT_NAME }}
     secrets:
       PYPI_TOKEN: ${{ secrets.PYPI_TOKEN }}
-  
