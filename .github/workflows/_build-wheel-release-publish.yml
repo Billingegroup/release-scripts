@@ -81,22 +81,31 @@ jobs:
           draft: true
           token: ${{ secrets.GITHUB_TOKEN }}
 
-  # pypi-publish:
-  #   needs: [build-package]
-  #   permissions:
-  #     id-token: write
-  #   environment:
-  #     name: testpypi   # FIXME: change to pypi
-  #     url: https://test/pypi.org/p/"${{ inputs.project }}"  # FIXME: remove test
-  #   runs-on: ubuntu-latest
-  #   steps:
-  #     - uses: actions/download-artifact@v4
-  #       with:
-  #         name: Packages
-  #         path: dist
+  pypi-publish:
+    needs: [build-package]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: Packages
+          path: dist
+          
+      - name: Checkout the repository
+        uses: actions/checkout@v4
 
-  #     - name: Publish package distributions to PyPI
-  #       uses: pypa/gh-action-pypi-publish@release/v1
-  #       with:
-  #         repository-url: https://test.pypi.org/legacy/  # FIXME: remove test.
-  #         verbose: true
+      - name: Setup Python for PyPI upload
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12' 
+
+      - name: Install Twine
+        run: |
+          python -m pip install --upgrade pip
+          pip install twine
+  
+      - name: Publish package to PyPI
+        env:
+          TWINE_USERNAME: __token__
+          TWINE_PASSWORD: ${{ secrets.TESTPYPI_API_TOKEN }}
+        # FIXME: Remove --repository testpypi
+        run: twine upload --repository testpypi dist/*
