@@ -89,13 +89,7 @@ jobs:
         with:
           name: Packages
           path: dist
-          
-      - name: List dist directory to verify download
-        run: ls -l dist
-
-      - name: Checkout the repository
-        uses: actions/checkout@v4
-
+      
       - name: Setup Python for PyPI upload
         uses: actions/setup-python@v5
         with:
