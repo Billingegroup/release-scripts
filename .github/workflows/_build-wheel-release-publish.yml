@@ -57,9 +57,12 @@ jobs:
           draft: true
           prerelease: true
           generate_release_notes: true
+          token: ${{ secrets.GITHUB_TOKEN }}
 
   github-release:
     needs: [build-package, update-changelog]
+    permissions:
+      contents: write
     if: "!contains(github.ref, 'rc')"
     runs-on: ubuntu-latest
     steps:
