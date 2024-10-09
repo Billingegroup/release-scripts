@@ -91,6 +91,8 @@ jobs:
       
       - name: Setup Python for PyPI upload
         uses: actions/setup-python@v5
+        with:
+          python-version: '3.12' 
 
       - name: Install Twine
         run: |
@@ -102,5 +104,4 @@ jobs:
           TWINE_USERNAME: __token__
           TWINE_PASSWORD: ${{ secrets.PYPI_TOKEN }}
         run: |
-          ls -l dist
           twine upload --repository testpypi dist/* --verbose
