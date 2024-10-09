@@ -73,7 +73,7 @@ jobs:
         # FIXME: v0 to main, and bobleesj to Billinge
         run: |
           wget https://raw.githubusercontent.com/bobleesj/release-scripts/v0/.github/workflows/get-latest-changelog.py
-          python get-latest-changelog "${{ github.ref_name }}"
+          python get-latest-changelog.py "${{ github.ref_name }}"
       - name: Release
         uses: softprops/action-gh-release@v2
         with:
