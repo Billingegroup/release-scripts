@@ -46,6 +46,8 @@ jobs:
 
   github-pre-release:
     needs: [build-package]
+    permissions:
+      contents: write
     if: contains(github.ref, 'rc')
     runs-on: ubuntu-latest
     steps:
