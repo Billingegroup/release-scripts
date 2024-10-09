@@ -110,4 +110,6 @@ jobs:
         env:
           TWINE_USERNAME: __token__
           TWINE_PASSWORD: ${{ secrets.TESTPYPI_API_TOKEN }}
-        run: twine upload --repository testpypi dist/*
+        run: |
+          ls -l dist
+          twine upload --repository testpypi dist/*
