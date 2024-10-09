@@ -90,6 +90,9 @@ jobs:
           name: Packages
           path: dist
           
+      - name: List dist directory to verify download
+        run: ls -l dist
+
       - name: Checkout the repository
         uses: actions/checkout@v4
 
@@ -107,5 +110,4 @@ jobs:
         env:
           TWINE_USERNAME: __token__
           TWINE_PASSWORD: ${{ secrets.TESTPYPI_API_TOKEN }}
-        # FIXME: Remove --repository testpypi
         run: twine upload --repository testpypi dist/*
