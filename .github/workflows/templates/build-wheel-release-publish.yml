@@ -1,4 +1,4 @@
-name: Release
+name: Release (GitHub/PyPI)
 
 on:
   workflow_dispatch:
@@ -11,3 +11,6 @@ jobs:
     uses: Billingegroup/release-scripts/.github/workflows/_build-wheel-release-publish.yml@{{ VERSION/v0 }}
     with:
       project: {{ PROJECT/PROJECT_NAME }}
+    secrets:
+      PYPI_TOKEN: ${{ secrets.PYPI_TOKEN }}
+  

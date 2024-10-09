@@ -103,7 +103,7 @@ jobs:
       - name: Publish package to PyPI
         env:
           TWINE_USERNAME: __token__
-          TWINE_PASSWORD: ${{ secrets.TESTPYPI_API_TOKEN }}
+          TWINE_PASSWORD: ${{ secrets.PYPI_TOKEN }}
         run: |
           ls -l dist
           twine upload --repository testpypi dist/* --verbose
