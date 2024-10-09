@@ -9,9 +9,6 @@ on:
         required: false
         type: string
 
-permissions:
-  id-token: write
-
 jobs:
   build-package:
     runs-on: ubuntu-latest
@@ -23,6 +20,8 @@ jobs:
 
   update-changelog:
     needs: [build-package]
+    permissions:
+      contents: write
     if: "!contains(github.ref, 'rc')"
     runs-on: ubuntu-latest
     steps:
@@ -80,21 +79,24 @@ jobs:
         with:
           body_path: CHANGELOG.txt
           draft: true
+          token: ${{ secrets.GITHUB_TOKEN }}
 
-  pypi-publish:
-    needs: [build-package]
-    environment:
-      name: testpypi   # FIXME: change to pypi
-      url: https://test/pypi.org/p/"${{ inputs.project }}"
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/download-artifact@v4
-        with:
-          name: Packages
-          path: dist
+  # pypi-publish:
+  #   needs: [build-package]
+  #   permissions:
+  #     id-token: write
+  #   environment:
+  #     name: testpypi   # FIXME: change to pypi
+  #     url: https://test/pypi.org/p/"${{ inputs.project }}"  # FIXME: remove test
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - uses: actions/download-artifact@v4
+  #       with:
+  #         name: Packages
+  #         path: dist
 
-      - name: Publish package distributions to PyPI
-        uses: pypa/gh-action-pypi-publish@release/v1
-        with:
-          repository-url: https://test.pypi.org/legacy/  # FIXME: remove test.
-          verbose: true
+  #     - name: Publish package distributions to PyPI
+  #       uses: pypa/gh-action-pypi-publish@release/v1
+  #       with:
+  #         repository-url: https://test.pypi.org/legacy/  # FIXME: remove test.
+  #         verbose: true
