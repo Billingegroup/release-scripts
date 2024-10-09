@@ -8,6 +8,11 @@ on:
         default: 'PROJECT_NAME'
         required: false
         type: string
+    secrets:
+      PYPI_TOKEN:
+        description: 'PyPI token'
+        required: true
+    
 
 jobs:
   build-package:
