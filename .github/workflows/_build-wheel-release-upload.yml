@@ -1,0 +1,104 @@
+name: Build Wheel, Release, Upload
+
+on:
+  workflow_call:
+    inputs:
+      project:
+        description: 'Name of the project to test'
+        default: 'PROJECT_NAME'
+        required: false
+        type: string
+    secrets:
+      PYPI_TOKEN:
+        description: 'PyPI token'
+        required: true
+
+jobs:
+  build-package:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref }}
+      - uses: hynek/build-and-inspect-python-package@v2
+
+  update-changelog:
+    needs: [build-package]
+    if: "!contains(github.ref, 'rc')"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout the repository
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref }}
+
+      - name: Update CHANGELOG.rst with the latest news
+        run: |
+          wget https://raw.githubusercontent.com/Billingegroup/release-scripts/v0/.github/workflows/update-changelog.py
+          python update-changelog.py "${{ github.ref_name }}"
+          rm update-changelog.py
+
+      - name: Commit the changes in CHANGELOG.rst
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: update changelog
+          branch: main
+
+  github-pre-release:
+    needs: [build-package]
+    if: contains(github.ref, 'rc')
+    runs-on: ubuntu-latest
+    steps:
+      - name: Generate GH release notes for pre-release
+        uses: softprops/action-gh-release@v2
+        with:
+          draft: true # FIXME: remove after testing
+          prerelease: true
+          generate_release_notes: true
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+  github-release:
+    needs: [build-package, update-changelog]
+    if: "!contains(github.ref, 'rc')"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout the repository
+        uses: actions/checkout@v4
+        with:
+          ref: main
+      - name: Generate GH release notes for release
+        run: |
+          wget https://raw.githubusercontent.com/Billingegroup/release-scripts/v0/.github/workflows/get-latest-changelog.py
+          python get-latest-changelog.py "${{ github.ref_name }}"
+      - name: Release
+        uses: softprops/action-gh-release@v2
+        with:
+          body_path: CHANGELOG.txt
+          draft: true  # FIXME: remove after testing
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+  pypi-publish:
+    needs: [build-package]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: Packages
+          path: dist
+
+      - name: Setup Python for PyPI upload
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install Twine
+        run: |
+          python -m pip install --upgrade pip
+          pip install twine
+
+      - name: Publish package to PyPI
+        env:
+          TWINE_USERNAME: __token__
+          TWINE_PASSWORD: ${{ secrets.PYPI_TOKEN }}
+        run: |
+          twine upload dist/* --verbose
