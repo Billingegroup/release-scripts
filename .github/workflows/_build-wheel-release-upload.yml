@@ -12,9 +12,40 @@ on:
       PYPI_TOKEN:
         description: 'PyPI token'
         required: true
+      PAT_TOKEN:
+        description: 'GitHub Personal Access Token'
+        required: true
 
 jobs:
+  tag-check:
+    runs-on: ubuntu-latest
+    outputs:
+      tag_valid: ${{ steps.tag-check.outputs.tag_valid }}
+    steps:
+      - name: Extract and validate tag for (pre)-release
+        id: tag-check
+        run: |
+          TAG_NAME=${GITHUB_REF#refs/tags/}
+
+          # Check if the tag matches the pattern, e.g. 3.1.32 or 0.1.3rc0
+          if [[ "$TAG_NAME" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]] || [[ "$TAG_NAME" =~ ^[0-9]+\.[0-9]+\.[0-9]+rc[0-9]+$ ]]; then
+            echo "tag_valid=true" >> $GITHUB_OUTPUT
+          fi
+
+  privilege-check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check user role
+        run: |
+          if [ "${{ github.actor }}" != "sbillinge" ]; then
+            echo "Error: Unauthorized user"
+            exit 1
+          fi
+          echo "User sbillinge is allowed to run this workflow."
+        
   build-package:
+    needs: [tag-check, privilege-check]
+    if: needs.tag-check.outputs.tag_valid == 'true'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -31,6 +62,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           ref: ${{ github.ref }}
+          token: ${{ secrets.PAT_TOKEN }}
 
       - name: Update CHANGELOG.rst with the latest news
         run: |
@@ -82,12 +114,12 @@ jobs:
     runs-on: ubuntu-latest
     if: always()  # This job will always initiate regardless of the success or failure of the needed jobs
     steps:
-      - name: Fail pypi-publish job if github-(pre)-release job failed
+      - name: Fail pypi-publish step if github-(pre)-release step failed
         run: |
           if [ "${{ needs.github-pre-release.result }}" == 'success' ] || [ "${{ needs.github-release.result }}" == 'success' ]; then
             echo "Ready for PyPI release..."
           else
-            echo "Previous github-(pre)-release job failed; exiting..."
+            echo "Previous github-(pre)-release step failed; exiting..."
             exit 1
           fi
 
