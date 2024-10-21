@@ -42,7 +42,7 @@ jobs:
             exit 1
           fi
           echo "User sbillinge is allowed to run this workflow."
-        
+
   build-package:
     needs: [tag-check, privilege-check]
     if: needs.tag-check.outputs.tag_valid == 'true'
