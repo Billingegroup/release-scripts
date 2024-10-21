@@ -114,12 +114,12 @@ jobs:
     runs-on: ubuntu-latest
     if: always()  # This job will always initiate regardless of the success or failure of the needed jobs
     steps:
-      - name: Fail pypi-publish step if github-(pre)-release step failed
+      - name: Fail pypi-publish job if github-(pre)-release job failed
         run: |
           if [ "${{ needs.github-pre-release.result }}" == 'success' ] || [ "${{ needs.github-release.result }}" == 'success' ]; then
             echo "Ready for PyPI release..."
           else
-            echo "Previous github-(pre)-release step failed; exiting..."
+            echo "Previous github-(pre)-release job failed; exiting..."
             exit 1
           fi
 
