@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
   push:
     tags:
-      - '*'
+      - '*'  # Trigger on all tags initially, but tag and release privilege are verified in _build-wheel-release-upload.yml
 
 jobs:
   release:
@@ -13,3 +13,4 @@ jobs:
       project: {{ PROJECT/PROJECT_NAME }}
     secrets:
       PYPI_TOKEN: ${{ secrets.PYPI_TOKEN }}
+      PAT_TOKEN: ${{ secrets.PAT_TOKEN }}
