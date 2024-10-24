@@ -8,6 +8,11 @@ on:
         default: 'PROJECT_NAME'
         required: false
         type: string
+      c_extension:
+        description: 'Whether the project has a C extension'
+        default: false
+        required: false
+        type: boolean
     secrets:
       PYPI_TOKEN:
         description: 'PyPI token'
@@ -142,3 +147,11 @@ jobs:
           TWINE_PASSWORD: ${{ secrets.PYPI_TOKEN }}
         run: |
           twine upload dist/* --verbose
+
+  deploy-docs:
+    needs: [pypi-publish]
+    if: always()  # Requires always() otherwise skipped
+    uses: ./.github/workflows/_publish-docs-on-release.yml
+    with:
+      project: ${{ inputs.project }}
+      c_extension: ${{ inputs.c_extension }}
