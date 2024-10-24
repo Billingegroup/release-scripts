@@ -155,4 +155,3 @@ jobs:
     with:
       project: ${{ inputs.project }}
       c_extension: ${{ inputs.c_extension }}
-
