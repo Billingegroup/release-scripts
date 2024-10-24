@@ -8,6 +8,11 @@ on:
         default: 'PROJECT_NAME'
         required: false
         type: string
+      c_extension:
+        description: 'Whether the project has a C extension'
+        default: false
+        required: false
+        type: boolean
     secrets:
       PYPI_TOKEN:
         description: 'PyPI token'
