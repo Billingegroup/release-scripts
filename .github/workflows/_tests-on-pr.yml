@@ -18,6 +18,10 @@ on:
         default: false
         required: false
         type: boolean
+    secrets:
+      CODECOV_TOKEN:
+        description: 'Codecov token'
+        required: true
 
 jobs:
   validate:
@@ -64,6 +68,14 @@ jobs:
         run: |
           if ${{ inputs.headless }}; then
             export DISPLAY=:99
-
           fi
-          python -m pytest
+          pytest --cov
+          coverage report -m
+          codecov
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v4
+        with:
+          verbose: true
+          fail_ci_if_error: true
+          token: ${{ secrets.CODECOV_TOKEN }}
