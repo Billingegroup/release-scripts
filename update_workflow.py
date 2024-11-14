@@ -59,9 +59,9 @@ def get_user_input(prompt, default, param_name):
 
     user_value = input(f"{prompt} (default: {default}): ").strip()
     if user_value.lower() == "false":
-        value = False
+        value = "false"
     elif user_value.lower() == "true":
-        value = True
+        value = "true"
     elif user_value:
         value = user_value
     else:
