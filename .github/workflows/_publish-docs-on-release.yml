@@ -24,6 +24,8 @@ jobs:
     steps:
       - name: Check out ${{ inputs.project }}
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Fetches branches and tags
 
       - name: Initialize miniconda
         uses: conda-incubator/setup-miniconda@v3
