@@ -105,8 +105,9 @@ jobs:
 
       - uses: actions/download-artifact@v4
         with:
-          name: Packages
+          pattern: '**/*' # Make sure all files are downloaded, including wheels
           path: dist
+          merge-multiple: true
 
       - name: Setup Python for PyPI upload
         uses: actions/setup-python@v5
