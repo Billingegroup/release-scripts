@@ -1,0 +1,32 @@
+name: Check release tag and user privilege for release
+
+on:
+  workflow_call:
+
+jobs:
+  tag-check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Extract and validate tag for (pre)-release
+        id: tag-check
+        # Check if the tag matches the pattern, e.g. 3.1.32 or 0.1.3rc0
+        run: |
+          TAG_NAME=${GITHUB_REF#refs/tags/}
+          if [[ "$TAG_NAME" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]] || [[ "$TAG_NAME" =~ ^[0-9]+\.[0-9]+\.[0-9]+rc[0-9]+$ ]]; then
+            echo "Valid tag: $TAG_NAME"
+          else
+            echo "Invalid tag: $TAG_NAME"
+            exit 1
+          fi
+
+  privilege-check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check user role
+        # FIXME: Replace sbillinge to bobleesj
+        run: |
+          if [ "${{ github.actor }}" != "sbillinge" ]; then
+            echo "Error: Unauthorized user"
+            exit 1
+          fi
+          echo "User sbillinge is allowed to run this workflow."
