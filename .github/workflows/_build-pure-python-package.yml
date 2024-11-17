@@ -12,17 +12,17 @@ jobs:
         uses: actions/checkout@v4
         with:
           ref: ${{ github.ref }}
-      
+
       # Set up Python
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
           python-version: '3.13'
-      
+
       # Install build tool
       - name: Install build dependencies
         run: python -m pip install --upgrade build
-      
+
       # Build the package (creates both .whl and .tar.gz in ./dist)
       - name: Build wheel and sdist
         run: python -m build

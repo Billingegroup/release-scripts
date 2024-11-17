@@ -19,7 +19,7 @@ jobs:
         with:
           name: cibw-sdist
           path: ./dist/*.tar.gz
-          
+
   build-wheels:
     needs: [build_sdist]
     defaults:

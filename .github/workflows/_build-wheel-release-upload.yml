@@ -24,12 +24,12 @@ on:
 jobs:
   tag-privilege-check:
     uses: ./.github/workflows/_release_tag_privilege_check.yml
-    
+
   build-pure-python-package:
     needs: [tag-privilege-check]
     if: inputs.c_extension == false
     uses: ./.github/workflows/_build-pure-python-package.yml
-    
+
   build-non-pure-python-package:
     needs: [tag-privilege-check]
     if: inputs.project == 'diffpy.pdffit2'
