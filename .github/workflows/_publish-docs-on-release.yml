@@ -8,8 +8,18 @@ on:
         default: 'PROJECT_NAME'
         required: false
         type: string
+      python_version:
+        description: 'Python version for Conda environment'
+        default: 3.13
+        required: false
+        type: number
       c_extension:
         description: 'Whether the project has a C extension'
+        default: false
+        required: false
+        type: boolean
+      headless:
+        description: 'Whether to run headless tests'
         default: false
         required: false
         type: boolean
@@ -34,14 +44,14 @@ jobs:
           auto-update-conda: true
           environment-file: environment.yml
           auto-activate-base: false
-          python-version: 3.13
+          python-version: ${{ inputs.python_version }}
 
       - name: Conda config
         run: >-
           conda config --set always_yes yes
           --set changeps1 no
 
-      - name: IInstall ${{ inputs.project }} and docs requirements
+      - name: Install ${{ inputs.project }} and docs requirements
         run: |
           conda install --file requirements/conda.txt
           conda install --file requirements/docs.txt
@@ -49,6 +59,13 @@ jobs:
             conda install --file requirements/build.txt
           fi
           python -m pip install . --no-deps
+
+      - name: Start Xvfb
+        if: ${{ inputs.headless }}
+        run: |
+          sudo apt-get install -y xvfb
+          export DISPLAY=:99
+          Xvfb :99 -screen 0 1024x768x16 &
 
       - name: build documents
         run: make -C doc html
