@@ -1,0 +1,42 @@
+name: Build wheel and sdist for a pure Python package
+
+on:
+  workflow_call:
+
+jobs:
+  build-pure-python-package:
+    runs-on: ubuntu-latest
+    steps:
+      # Checkout the code
+      - name: Check out the repository
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref }}
+
+      # Set up Python
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.13'
+
+      # Install build tool
+      - name: Install build dependencies
+        run: python -m pip install --upgrade build
+
+      # Build the package (creates both .whl and .tar.gz in ./dist)
+      - name: Build wheel and sdist
+        run: python -m build
+
+      # Upload the wheel file
+      - name: Upload wheel artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: wheel
+          path: ./dist/*.whl
+
+      # Upload the sdist file
+      - name: Upload sdist artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: sdist
+          path: ./dist/*.tar.gz

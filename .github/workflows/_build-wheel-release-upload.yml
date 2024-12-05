@@ -22,47 +22,35 @@ on:
         required: true
 
 jobs:
-  tag-check:
-    runs-on: ubuntu-latest
-    outputs:
-      tag_valid: ${{ steps.tag-check.outputs.tag_valid }}
-    steps:
-      - name: Extract and validate tag for (pre)-release
-        id: tag-check
-        run: |
-          TAG_NAME=${GITHUB_REF#refs/tags/}
+  tag-privilege-check:
+    uses: ./.github/workflows/_release_tag_privilege_check.yml
 
-          # Check if the tag matches the pattern, e.g. 3.1.32 or 0.1.3rc0
-          if [[ "$TAG_NAME" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]] || [[ "$TAG_NAME" =~ ^[0-9]+\.[0-9]+\.[0-9]+rc[0-9]+$ ]]; then
-            echo "tag_valid=true" >> $GITHUB_OUTPUT
-          fi
+  build-pure-python-package:
+    needs: [tag-privilege-check]
+    if: inputs.c_extension == false
+    uses: ./.github/workflows/_build-pure-python-package.yml
 
-  privilege-check:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Check user role
-        run: |
-          if [ "${{ github.actor }}" != "sbillinge" ]; then
-            echo "Error: Unauthorized user"
-            exit 1
-          fi
-          echo "User sbillinge is allowed to run this workflow."
-
-  build-package:
-    needs: [tag-check, privilege-check]
-    if: needs.tag-check.outputs.tag_valid == 'true'
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          ref: ${{ github.ref }}
-      - uses: hynek/build-and-inspect-python-package@v2
+  build-non-pure-python-package:
+    needs: [tag-privilege-check]
+    if: inputs.project == 'diffpy.pdffit2'
+    uses: ./.github/workflows/_build-pdffit2-package.yml
 
   update-changelog:
-    needs: [build-package]
-    if: "!contains(github.ref, 'rc')"
+    needs: [build-pure-python-package, build-non-pure-python-package]
+    # The always() function is necessary to ensure that we wait for both build jobs to complete, even if one of them is skipped.
+    # Without always(), if one of the needed jobs is skipped, the `update-changelog` job will not be executed.
+    if: "always() && !contains(github.ref, 'rc')"
     runs-on: ubuntu-latest
     steps:
+      - name: Fail update-changelog job if building failed
+        run: |
+          if [ "${{ needs.build-pure-python-package.result }}" == 'success' ] || [ "${{ needs.build-non-pure-python-package.result }}" == 'success' ]; then
+            echo "Ready to update CHANGELOG.rst..."
+          else
+            echo "Previous build-package job failed; exiting..."
+            exit 1
+          fi
+
       - name: Checkout the repository
         uses: actions/checkout@v4
         with:
@@ -82,10 +70,19 @@ jobs:
           branch: main
 
   github-pre-release:
-    needs: [build-package]
-    if: contains(github.ref, 'rc')
+    needs: [build-pure-python-package, build-non-pure-python-package]
+    if: "always() && contains(github.ref, 'rc')"
     runs-on: ubuntu-latest
     steps:
+      - name: Fail github-pre-release job if building job failed
+        run: |
+          if [ "${{ needs.build-pure-python-package.result }}" == 'success' ] || [ "${{ needs.build-non-pure-python-package.result }}" == 'success' ]; then
+            echo "Ready to pre-release on GitHub..."
+          else
+            echo "Previous build-package job failed; exiting..."
+            exit 1
+          fi
+
       - name: Generate GH release notes for pre-release
         uses: softprops/action-gh-release@v2
         with:
@@ -94,10 +91,18 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
 
   github-release:
-    needs: [build-package, update-changelog]
-    if: "!contains(github.ref, 'rc')"
+    needs: [update-changelog]
+    if: "always() && !contains(github.ref, 'rc')"
     runs-on: ubuntu-latest
     steps:
+      - name: Fail github-release job if CHANGELOG udpate failed
+        run: |
+          if [ "${{ needs.update-changelog.result }}" == 'success' ]; then
+            echo "Ready to release on GitHub..."
+          else
+            echo "Previous update-changelog job failed; exiting..."
+            exit 1
+          fi
       - name: Checkout the repository
         uses: actions/checkout@v4
         with:
@@ -128,8 +133,9 @@ jobs:
 
       - uses: actions/download-artifact@v4
         with:
-          name: Packages
+          pattern: '**/*' # Make sure all files are downloaded, including wheels
           path: dist
+          merge-multiple: true
 
       - name: Setup Python for PyPI upload
         uses: actions/setup-python@v5
@@ -147,11 +153,3 @@ jobs:
           TWINE_PASSWORD: ${{ secrets.PYPI_TOKEN }}
         run: |
           twine upload dist/* --verbose
-
-  deploy-docs:
-    needs: [pypi-publish]
-    if: always()  # Requires always() otherwise skipped
-    uses: ./.github/workflows/_publish-docs-on-release.yml
-    with:
-      project: ${{ inputs.project }}
-      c_extension: ${{ inputs.c_extension }}
