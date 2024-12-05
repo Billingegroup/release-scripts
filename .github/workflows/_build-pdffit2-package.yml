@@ -37,7 +37,6 @@ jobs:
           - [macos-14, macosx_arm64]
           - [windows-latest, win_amd64]
         python:
-          - ["3.10", "cp310"]
           - ["3.11", "cp311"]
           - ["3.12", "cp312"]
 
