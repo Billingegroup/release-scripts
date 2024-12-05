@@ -18,6 +18,11 @@ on:
         default: false
         required: false
         type: boolean
+      headless:
+        description: 'Whether to run headless tests'
+        default: false
+        required: false
+        type: boolean
 
 jobs:
   docs:
@@ -54,6 +59,13 @@ jobs:
             conda install --file requirements/build.txt
           fi
           python -m pip install . --no-deps
+
+      - name: Start Xvfb
+        if: ${{ inputs.headless }}
+        run: |
+          sudo apt-get install -y xvfb
+          export DISPLAY=:99
+          Xvfb :99 -screen 0 1024x768x16 &
 
       - name: build documents
         run: make -C doc html
