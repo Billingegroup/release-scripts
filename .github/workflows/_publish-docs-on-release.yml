@@ -8,6 +8,11 @@ on:
         default: 'PROJECT_NAME'
         required: false
         type: string
+      python_version:
+        description: 'Python version for Conda environment'
+        default: 3.13
+        required: false
+        type: number
       c_extension:
         description: 'Whether the project has a C extension'
         default: false
@@ -34,14 +39,14 @@ jobs:
           auto-update-conda: true
           environment-file: environment.yml
           auto-activate-base: false
-          python-version: 3.13
+          python-version: ${{ inputs.python_version }}
 
       - name: Conda config
         run: >-
           conda config --set always_yes yes
           --set changeps1 no
 
-      - name: IInstall ${{ inputs.project }} and docs requirements
+      - name: Install ${{ inputs.project }} and docs requirements
         run: |
           conda install --file requirements/conda.txt
           conda install --file requirements/docs.txt
