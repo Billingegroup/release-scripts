@@ -95,7 +95,7 @@ jobs:
     if: "always() && !contains(github.ref, 'rc')"
     runs-on: ubuntu-latest
     steps:
-      - name: Fail github-release job if CHANGELOG udpate failed
+      - name: Fail github-release job if CHANGELOG update failed
         run: |
           if [ "${{ needs.update-changelog.result }}" == 'success' ]; then
             echo "Ready to release on GitHub..."
