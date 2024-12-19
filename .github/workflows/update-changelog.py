@@ -21,6 +21,10 @@ def extract_news_items(file_path):
     with open(file_path, "r") as file:
         for line in file:
             line = line.strip()
+            
+            # Skip lines indicating no news
+            if line.lower().startswith("* no news"):
+                continue
 
             # Check if the line is a category header
             if line.startswith("**") and line.endswith(":**"):
