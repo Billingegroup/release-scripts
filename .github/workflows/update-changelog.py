@@ -21,7 +21,7 @@ def extract_news_items(file_path):
     with open(file_path, "r") as file:
         for line in file:
             line = line.strip()
-            
+
             # Skip lines indicating no news
             if line.lower().startswith("* no news"):
                 continue
