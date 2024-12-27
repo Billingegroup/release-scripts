@@ -11,6 +11,8 @@ jobs:
     uses: Billingegroup/release-scripts/.github/workflows/_build-wheel-release-upload.yml@{{ VERSION/v0 }}
     with:
       project: {{ PROJECT/PROJECT_NAME }}
+      c_extension: {{ C_EXTENSION/false }}
+      github_admin_username: 'sbillinge'
     secrets:
       PYPI_TOKEN: ${{ secrets.PYPI_TOKEN }}
       PAT_TOKEN: ${{ secrets.PAT_TOKEN }}

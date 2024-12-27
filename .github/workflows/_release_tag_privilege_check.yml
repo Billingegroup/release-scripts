@@ -2,6 +2,12 @@ name: Check release tag and user privilege for release
 
 on:
   workflow_call:
+    inputs:
+      github_admin_username:
+        description: 'GitHub admin authorized for GitHub/PyPI release'
+        required: false
+        default: 'sbillinge'
+        type: string
 
 jobs:
   tag-check:
@@ -24,7 +30,7 @@ jobs:
     steps:
       - name: Check user role
         run: |
-          if [ "${{ github.actor }}" != "sbillinge" ]; then
+          if [ "${{ github.actor }}" != "${{ inputs.github_admin_username }}" ]; then
             echo "Error: Unauthorized user"
             exit 1
           fi
