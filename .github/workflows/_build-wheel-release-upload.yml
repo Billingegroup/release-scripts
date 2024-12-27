@@ -32,131 +32,131 @@ jobs:
     with:
       github_admin_username: ${{ inputs.github_admin_username }}
 
-  build-pure-python-package:
-    needs: [tag-privilege-check]
-    if: inputs.c_extension == false
-    uses: ./.github/workflows/_build-pure-python-package.yml
+  # build-pure-python-package:
+  #   needs: [tag-privilege-check]
+  #   if: inputs.c_extension == false
+  #   uses: ./.github/workflows/_build-pure-python-package.yml
 
-  build-non-pure-python-package:
-    needs: [tag-privilege-check]
-    if: inputs.project == 'diffpy.pdffit2'
-    uses: ./.github/workflows/_build-pdffit2-package.yml
+  # build-non-pure-python-package:
+  #   needs: [tag-privilege-check]
+  #   if: inputs.project == 'diffpy.pdffit2'
+  #   uses: ./.github/workflows/_build-pdffit2-package.yml
 
-  update-changelog:
-    needs: [build-pure-python-package, build-non-pure-python-package]
-    # The always() function is necessary to ensure that we wait for both build jobs to complete, even if one of them is skipped.
-    # Without always(), if one of the needed jobs is skipped, the `update-changelog` job will not be executed.
-    if: "always() && !contains(github.ref, 'rc')"
-    runs-on: ubuntu-latest
-    steps:
-      - name: Fail update-changelog job if building failed
-        run: |
-          if [ "${{ needs.build-pure-python-package.result }}" == 'success' ] || [ "${{ needs.build-non-pure-python-package.result }}" == 'success' ]; then
-            echo "Ready to update CHANGELOG.rst..."
-          else
-            echo "Previous build-package job failed; exiting..."
-            exit 1
-          fi
+  # update-changelog:
+  #   needs: [build-pure-python-package, build-non-pure-python-package]
+  #   # The always() function is necessary to ensure that we wait for both build jobs to complete, even if one of them is skipped.
+  #   # Without always(), if one of the needed jobs is skipped, the `update-changelog` job will not be executed.
+  #   if: "always() && !contains(github.ref, 'rc')"
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - name: Fail update-changelog job if building failed
+  #       run: |
+  #         if [ "${{ needs.build-pure-python-package.result }}" == 'success' ] || [ "${{ needs.build-non-pure-python-package.result }}" == 'success' ]; then
+  #           echo "Ready to update CHANGELOG.rst..."
+  #         else
+  #           echo "Previous build-package job failed; exiting..."
+  #           exit 1
+  #         fi
 
-      - name: Checkout the repository
-        uses: actions/checkout@v4
-        with:
-          ref: ${{ github.ref }}
-          token: ${{ secrets.PAT_TOKEN }}
+  #     - name: Checkout the repository
+  #       uses: actions/checkout@v4
+  #       with:
+  #         ref: ${{ github.ref }}
+  #         token: ${{ secrets.PAT_TOKEN }}
 
-      - name: Update CHANGELOG.rst with the latest news
-        run: |
-          wget https://raw.githubusercontent.com/Billingegroup/release-scripts/v0/.github/workflows/update-changelog.py
-          python update-changelog.py "${{ github.ref_name }}"
-          rm update-changelog.py
+  #     - name: Update CHANGELOG.rst with the latest news
+  #       run: |
+  #         wget https://raw.githubusercontent.com/Billingegroup/release-scripts/v0/.github/workflows/update-changelog.py
+  #         python update-changelog.py "${{ github.ref_name }}"
+  #         rm update-changelog.py
 
-      - name: Commit the changes in CHANGELOG.rst
-        uses: stefanzweifel/git-auto-commit-action@v5
-        with:
-          commit_message: update changelog
-          branch: main
+  #     - name: Commit the changes in CHANGELOG.rst
+  #       uses: stefanzweifel/git-auto-commit-action@v5
+  #       with:
+  #         commit_message: update changelog
+  #         branch: main
 
-  github-pre-release:
-    needs: [build-pure-python-package, build-non-pure-python-package]
-    if: "always() && contains(github.ref, 'rc')"
-    runs-on: ubuntu-latest
-    steps:
-      - name: Fail github-pre-release job if building job failed
-        run: |
-          if [ "${{ needs.build-pure-python-package.result }}" == 'success' ] || [ "${{ needs.build-non-pure-python-package.result }}" == 'success' ]; then
-            echo "Ready to pre-release on GitHub..."
-          else
-            echo "Previous build-package job failed; exiting..."
-            exit 1
-          fi
+  # github-pre-release:
+  #   needs: [build-pure-python-package, build-non-pure-python-package]
+  #   if: "always() && contains(github.ref, 'rc')"
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - name: Fail github-pre-release job if building job failed
+  #       run: |
+  #         if [ "${{ needs.build-pure-python-package.result }}" == 'success' ] || [ "${{ needs.build-non-pure-python-package.result }}" == 'success' ]; then
+  #           echo "Ready to pre-release on GitHub..."
+  #         else
+  #           echo "Previous build-package job failed; exiting..."
+  #           exit 1
+  #         fi
 
-      - name: Generate GH release notes for pre-release
-        uses: softprops/action-gh-release@v2
-        with:
-          prerelease: true
-          generate_release_notes: true
-          token: ${{ secrets.GITHUB_TOKEN }}
+  #     - name: Generate GH release notes for pre-release
+  #       uses: softprops/action-gh-release@v2
+  #       with:
+  #         prerelease: true
+  #         generate_release_notes: true
+  #         token: ${{ secrets.GITHUB_TOKEN }}
 
-  github-release:
-    needs: [update-changelog]
-    if: "always() && !contains(github.ref, 'rc')"
-    runs-on: ubuntu-latest
-    steps:
-      - name: Fail github-release job if CHANGELOG update failed
-        run: |
-          if [ "${{ needs.update-changelog.result }}" == 'success' ]; then
-            echo "Ready to release on GitHub..."
-          else
-            echo "Previous update-changelog job failed; exiting..."
-            exit 1
-          fi
-      - name: Checkout the repository
-        uses: actions/checkout@v4
-        with:
-          ref: main
-      - name: Generate GH release notes for release
-        run: |
-          wget https://raw.githubusercontent.com/Billingegroup/release-scripts/v0/.github/workflows/get-latest-changelog.py
-          python get-latest-changelog.py "${{ github.ref_name }}"
-      - name: Release
-        uses: softprops/action-gh-release@v2
-        with:
-          body_path: CHANGELOG.txt
-          token: ${{ secrets.GITHUB_TOKEN }}
+  # github-release:
+  #   needs: [update-changelog]
+  #   if: "always() && !contains(github.ref, 'rc')"
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - name: Fail github-release job if CHANGELOG update failed
+  #       run: |
+  #         if [ "${{ needs.update-changelog.result }}" == 'success' ]; then
+  #           echo "Ready to release on GitHub..."
+  #         else
+  #           echo "Previous update-changelog job failed; exiting..."
+  #           exit 1
+  #         fi
+  #     - name: Checkout the repository
+  #       uses: actions/checkout@v4
+  #       with:
+  #         ref: main
+  #     - name: Generate GH release notes for release
+  #       run: |
+  #         wget https://raw.githubusercontent.com/Billingegroup/release-scripts/v0/.github/workflows/get-latest-changelog.py
+  #         python get-latest-changelog.py "${{ github.ref_name }}"
+  #     - name: Release
+  #       uses: softprops/action-gh-release@v2
+  #       with:
+  #         body_path: CHANGELOG.txt
+  #         token: ${{ secrets.GITHUB_TOKEN }}
 
-  pypi-publish:
-    needs: [github-pre-release, github-release]
-    runs-on: ubuntu-latest
-    if: always()  # This job will always initiate regardless of the success or failure of the needed jobs
-    steps:
-      - name: Fail pypi-publish job if github-(pre)-release job failed
-        run: |
-          if [ "${{ needs.github-pre-release.result }}" == 'success' ] || [ "${{ needs.github-release.result }}" == 'success' ]; then
-            echo "Ready for PyPI release..."
-          else
-            echo "Previous github-(pre)-release job failed; exiting..."
-            exit 1
-          fi
+  # pypi-publish:
+  #   needs: [github-pre-release, github-release]
+  #   runs-on: ubuntu-latest
+  #   if: always()  # This job will always initiate regardless of the success or failure of the needed jobs
+  #   steps:
+  #     - name: Fail pypi-publish job if github-(pre)-release job failed
+  #       run: |
+  #         if [ "${{ needs.github-pre-release.result }}" == 'success' ] || [ "${{ needs.github-release.result }}" == 'success' ]; then
+  #           echo "Ready for PyPI release..."
+  #         else
+  #           echo "Previous github-(pre)-release job failed; exiting..."
+  #           exit 1
+  #         fi
 
-      - uses: actions/download-artifact@v4
-        with:
-          pattern: '**/*' # Make sure all files are downloaded, including wheels
-          path: dist
-          merge-multiple: true
+  #     - uses: actions/download-artifact@v4
+  #       with:
+  #         pattern: '**/*' # Make sure all files are downloaded, including wheels
+  #         path: dist
+  #         merge-multiple: true
 
-      - name: Setup Python for PyPI upload
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.13'
+  #     - name: Setup Python for PyPI upload
+  #       uses: actions/setup-python@v5
+  #       with:
+  #         python-version: '3.13'
 
-      - name: Install Twine
-        run: |
-          python -m pip install --upgrade pip
-          pip install twine
+  #     - name: Install Twine
+  #       run: |
+  #         python -m pip install --upgrade pip
+  #         pip install twine
 
-      - name: Publish package to PyPI
-        env:
-          TWINE_USERNAME: __token__
-          TWINE_PASSWORD: ${{ secrets.PYPI_TOKEN }}
-        run: |
-          twine upload dist/* --verbose
+  #     - name: Publish package to PyPI
+  #       env:
+  #         TWINE_USERNAME: __token__
+  #         TWINE_PASSWORD: ${{ secrets.PYPI_TOKEN }}
+  #       run: |
+  #         twine upload dist/* --verbose
