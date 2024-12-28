@@ -15,8 +15,7 @@ on:
         type: boolean
       github_admin_username:
         description: 'GitHub admin authorized for GitHub/PyPI release'
-        required: false
-        default: 'sbillinge'
+        required: true
         type: string
     secrets:
       PYPI_TOKEN:
