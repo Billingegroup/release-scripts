@@ -4,7 +4,7 @@ on:
   workflow_call:
     inputs:
       project:
-        description: 'Name of the project to test'
+        description: 'Name of the project to build and release'
         default: 'PROJECT_NAME'
         required: false
         type: string
@@ -13,6 +13,10 @@ on:
         default: false
         required: false
         type: boolean
+      github_admin_username:
+        description: 'GitHub admin authorized for GitHub/PyPI release'
+        required: true
+        type: string
     secrets:
       PYPI_TOKEN:
         description: 'PyPI token'
@@ -24,6 +28,8 @@ on:
 jobs:
   tag-privilege-check:
     uses: ./.github/workflows/_release_tag_privilege_check.yml
+    with:
+      github_admin_username: ${{ inputs.github_admin_username }}
 
   build-pure-python-package:
     needs: [tag-privilege-check]
