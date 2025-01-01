@@ -88,7 +88,7 @@ jobs:
       - name: Fail delete-create-new-tag job if CHANGELOG update failed
         run: |
           if [ "${{ needs.update-changelog.result }}" == 'success' ]; then
-            echo "Ready to delete and create new tag containing the latest CHANGLEOG.rst update in the main branch..."
+            echo "Ready to delete and create new tag containing the latest CHANGELOG.rst update in the main branch..."
           else
             echo "Previous update-changelog job failed; exiting..."
             exit 1
@@ -101,7 +101,7 @@ jobs:
         run: |
           git tag -d "${{ github.ref_name }}"
           git push origin ":${{ github.ref_name }}"
-      - name: Create a new tag (Expect commit commit has to match with that of main branch)
+      - name: Create a new tag (Expect commit SHA to match with that of main branch)
         run: |
           git tag "${{ github.ref_name }}"
           git push origin "${{ github.ref_name }}"
