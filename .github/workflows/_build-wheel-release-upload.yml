@@ -99,6 +99,7 @@ jobs:
           ref: main
       - name: Delete the tag
         run: |
+          git fetch --tags
           git tag -d "${{ github.ref_name }}"
           git push origin ":${{ github.ref_name }}"
       - name: Create a new tag (Expect commit SHA to match with that of main branch)
