@@ -25,7 +25,7 @@ on:
         type: boolean
 
 jobs:
-  docs:
+  build-deploy:
     defaults:
       run:
         shell: bash -l {0}
@@ -35,7 +35,7 @@ jobs:
       - name: Check out ${{ inputs.project }}
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0  # Fetches branches and tags
+          ref: ${{ github.ref }}
 
       - name: Initialize miniconda
         uses: conda-incubator/setup-miniconda@v3

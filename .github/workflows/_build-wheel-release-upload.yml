@@ -75,6 +75,38 @@ jobs:
           commit_message: update changelog
           branch: main
 
+  delete-create-new-tag:
+    # For a full release, we delete and create a new tag to reflect the latest changes in the CHANGELOG.rst.
+    # Recall that during the full release, the `main` branch's CHANGELOG.rst has been updated, and we want the
+    # tag to reflect the latest changes in the CHANGELOG.rst done by the update-changelog above.
+    # For more discussions, please read https://github.com/Billingegroup/release-scripts/pull/120
+    needs: [update-changelog]
+    # Always run this job for a full release but fail if the update-changelog job previously failed.
+    if: "always() && !contains(github.ref, 'rc')"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Fail delete-create-new-tag job if CHANGELOG update failed
+        run: |
+          if [ "${{ needs.update-changelog.result }}" == 'success' ]; then
+            echo "Ready to delete and create new tag containing the latest CHANGELOG.rst update in the main branch..."
+          else
+            echo "Previous update-changelog job failed; exiting..."
+            exit 1
+          fi
+      - name: Checkout the repository
+        uses: actions/checkout@v4
+        with:
+          ref: main
+      - name: Delete the tag
+        run: |
+          git fetch --tags
+          git tag -d "${{ github.ref_name }}"
+          git push origin ":${{ github.ref_name }}"
+      - name: Create a new tag (Expect commit SHA to match with that of main branch)
+        run: |
+          git tag "${{ github.ref_name }}"
+          git push origin "${{ github.ref_name }}"
+
   github-pre-release:
     needs: [build-pure-python-package, build-non-pure-python-package]
     if: "always() && contains(github.ref, 'rc')"
@@ -97,13 +129,13 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
 
   github-release:
-    needs: [update-changelog]
+    needs: [delete-create-new-tag]
     if: "always() && !contains(github.ref, 'rc')"
     runs-on: ubuntu-latest
     steps:
       - name: Fail github-release job if CHANGELOG update failed
         run: |
-          if [ "${{ needs.update-changelog.result }}" == 'success' ]; then
+          if [ "${{ needs.delete-create-new-tag.result }}" == 'success' ]; then
             echo "Ready to release on GitHub..."
           else
             echo "Previous update-changelog job failed; exiting..."
@@ -159,3 +191,11 @@ jobs:
           TWINE_PASSWORD: ${{ secrets.PYPI_TOKEN }}
         run: |
           twine upload dist/* --verbose
+
+  docs:
+    needs: [github-pre-release, github-release]
+    if: always()
+    uses: ./.github/workflows/_publish-docs-on-release.yml
+    with:
+      project: ${{ inputs.project }}
+      c_extension: ${{ inputs.c_extension }}
