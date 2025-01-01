@@ -35,7 +35,7 @@ jobs:
       - name: Check out ${{ inputs.project }}
         uses: actions/checkout@v4
         with:
-          ref: main  # Fetch the main branch with CHANGELOG.rst modified during full release
+          ref: ${{ github.ref }}
 
       - name: Initialize miniconda
         uses: conda-incubator/setup-miniconda@v3
