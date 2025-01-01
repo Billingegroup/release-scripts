@@ -136,7 +136,7 @@ jobs:
     steps:
       - name: Fail github-release job if CHANGELOG update failed
         run: |
-          if [ "${{ needs.delete-create-new-tag }}" == 'success' ]; then
+          if [ "${{ needs.delete-create-new-tag.result }}" == 'success' ]; then
             echo "Ready to release on GitHub..."
           else
             echo "Previous update-changelog job failed; exiting..."
