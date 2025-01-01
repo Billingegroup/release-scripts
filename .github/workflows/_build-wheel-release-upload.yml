@@ -75,6 +75,37 @@ jobs:
           commit_message: update changelog
           branch: main
 
+  delete-create-new-tag:
+    # For a full release, we delete and create a new tag to reflect the latest changes in the CHANGELOG.rst.
+    # Recall that during the full release, the `main` branch's CHANGELOG.rst has been updated, and we want the
+    # tag to reflect the latest changes in the CHANGELOG.rst done by the update-changelog above.
+    # For more discussions, please read https://github.com/Billingegroup/release-scripts/pull/120
+    needs: [update-changelog]
+    # Always run this job for a full release but fail if the update-changelog job previously failed.
+    if: "always() && !contains(github.ref, 'rc')"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Fail delete-create-new-tag job if CHANGELOG update failed
+        run: |
+          if [ "${{ needs.update-changelog.result }}" == 'success' ]; then
+            echo "Ready to delete and create new tag containing the latest CHANGLEOG.rst update in the main branch..."
+          else
+            echo "Previous update-changelog job failed; exiting..."
+            exit 1
+          fi
+      - name: Checkout the repository
+        uses: actions/checkout@v4
+        with:
+          ref: main
+      - name: Delete the tag
+        run: |
+          git tag -d "${{ github.ref_name }}"
+          git push origin ":${{ github.ref_name }}"
+      - name: Create a new tag (Expect commit commit has to match with that of main branch)
+        run: |
+          git tag "${{ github.ref_name }}"
+          git push origin "${{ github.ref_name }}"
+
   github-pre-release:
     needs: [build-pure-python-package, build-non-pure-python-package]
     if: "always() && contains(github.ref, 'rc')"
@@ -94,10 +125,11 @@ jobs:
         with:
           prerelease: true
           generate_release_notes: true
+          draft: true
           token: ${{ secrets.GITHUB_TOKEN }}
 
   github-release:
-    needs: [update-changelog]
+    needs: [delete-create-new-tag]
     if: "always() && !contains(github.ref, 'rc')"
     runs-on: ubuntu-latest
     steps:
@@ -122,6 +154,7 @@ jobs:
         with:
           body_path: CHANGELOG.txt
           token: ${{ secrets.GITHUB_TOKEN }}
+          draft: true
 
   docs:
     needs: [github-pre-release, github-release]
@@ -130,40 +163,3 @@ jobs:
     with:
       project: ${{ inputs.project }}
       c_extension: ${{ inputs.c_extension }}
-
-  pypi-publish:
-    needs: [github-pre-release, github-release]
-    runs-on: ubuntu-latest
-    if: always()  # This job will always initiate regardless of the success or failure of the needed jobs
-    steps:
-      - name: Fail pypi-publish job if github-(pre)-release job failed
-        run: |
-          if [ "${{ needs.github-pre-release.result }}" == 'success' ] || [ "${{ needs.github-release.result }}" == 'success' ]; then
-            echo "Ready for PyPI release..."
-          else
-            echo "Previous github-(pre)-release job failed; exiting..."
-            exit 1
-          fi
-
-      - uses: actions/download-artifact@v4
-        with:
-          pattern: '**/*' # Make sure all files are downloaded, including wheels
-          path: dist
-          merge-multiple: true
-
-      - name: Setup Python for PyPI upload
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.13'
-
-      - name: Install Twine
-        run: |
-          python -m pip install --upgrade pip
-          pip install twine
-
-      - name: Publish package to PyPI
-        env:
-          TWINE_USERNAME: __token__
-          TWINE_PASSWORD: ${{ secrets.PYPI_TOKEN }}
-        run: |
-          twine upload dist/* --verbose
