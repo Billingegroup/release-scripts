@@ -1,6 +1,6 @@
 """Check if the PR has a news item.
 
-Put a warning comment if it doesn't.
+Put a warning comment and check fails if it doesn't.
 """
 
 import os
@@ -59,6 +59,8 @@ def main():
                 """\
 **Warning!** No news item is found for this PR. If this is a user-facing change/feature/fix,
 please add a news item by copying the format from `news/TEMPLATE.rst`.
+For best practices, please visit
+https://Billingegroup.github.io/cookiecutter/cookiecutter-guide.html#news-file-guide.
 """
             )
         assert False
