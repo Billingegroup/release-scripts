@@ -12,7 +12,7 @@ jobs:
     with:
       project: {{ PROJECT/PROJECT_NAME }}
       c_extension: {{ C_EXTENSION/false }}
-      github_admin_username: {{ GITHUB_ADMIN_USERNAME }}
+      github_admin_username: {{ GITHUB_ADMIN_USERNAME/username }}
     secrets:
       PYPI_TOKEN: ${{ secrets.PYPI_TOKEN }}
       PAT_TOKEN: ${{ secrets.PAT_TOKEN }}
