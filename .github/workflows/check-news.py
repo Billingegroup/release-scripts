@@ -1,6 +1,6 @@
 """Check if the PR has a news item.
 
-Put a warning comment and check fails if it doesn't.
+Put a warning comment and return `assert False` if the PR does not contain a news file.
 """
 
 import os
