@@ -60,7 +60,7 @@ def main():
 **Warning!** No news item is found for this PR. If this is a user-facing change/feature/fix,
 please add a news item by copying the format from `news/TEMPLATE.rst`.
 For best practices, please visit
-https://Billingegroup.github.io/cookiecutter/cookiecutter-guide.html#news-file-guide.
+https://Billingegroup.github.io/scikit-package/cookiecutter-guide.html#news-file-guide.
 """
             )
         assert False
