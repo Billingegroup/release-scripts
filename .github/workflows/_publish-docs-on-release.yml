@@ -58,7 +58,7 @@ jobs:
           if ${{ inputs.c_extension }}; then
             conda install --file requirements/build.txt
           fi
-          # Install the project in editable mode in order for 
+          # Install the project in editable mode in order for
           # sphinx to grab api from extension files
           python -m pip install -e . --no-deps
 
