@@ -58,7 +58,7 @@ jobs:
           if ${{ inputs.c_extension }}; then
             conda install --file requirements/build.txt
           fi
-          python -m pip install . --no-deps
+          python -m pip install -e . --no-deps
 
       - name: Start Xvfb
         if: ${{ inputs.headless }}
