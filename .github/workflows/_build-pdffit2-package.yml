@@ -12,23 +12,6 @@ jobs:
         with:
           ref: ${{ github.ref }}
 
-      - name: Initialize miniconda
-        uses: conda-incubator/setup-miniconda@v3
-        with:
-          activate-environment: test
-          auto-update-conda: true
-          environment-file: environment.yml
-          auto-activate-base: false
-          python-version: 3.13
-
-      - name: Conda config
-        run: >-
-          conda config --set always_yes yes
-          --set changeps1 no
-
-      - name: Install gsl
-        run: conda install gsl
-
       - name: Build sdist
         run: pipx run build --sdist
 
