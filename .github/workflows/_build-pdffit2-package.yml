@@ -39,6 +39,7 @@ jobs:
         python:
           - ["3.11", "cp311"]
           - ["3.12", "cp312"]
+          - ["3.13", "cp313"]
 
     steps:
       - name: Check out ${{ inputs.project }}
