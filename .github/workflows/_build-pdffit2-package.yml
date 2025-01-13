@@ -89,8 +89,6 @@ jobs:
         uses: pypa/cibuildwheel@v2.21.1
         env:
           CIBW_BUILD: ${{ matrix.python[1] }}-${{ matrix.buildplat[1] }}
-          CIBW_ENVIRONMENT: |
-            GSL_PATH=C:/vcpkg/installed/x64-windows
           CONDA_PREFIX: ${{ env.CONDA_PREFIX }}
         with:
           output-dir: dist
