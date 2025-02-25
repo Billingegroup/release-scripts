@@ -59,7 +59,7 @@ def main():
                 """\
 **Warning!** No news item is found for this PR. If this is a user-facing change/feature/fix,
 please add a news item by copying the format from `news/TEMPLATE.rst`.
-For best practices, please visit 
+For best practices, please visit
 https://billingegroup.github.io/scikit-package/frequently-asked-questions.html#billinge-group-standards.
 """
             )
