@@ -1,0 +1,47 @@
+name: Tests on PR
+
+on:
+  workflow_call:
+    inputs:
+      python_version:
+        description: 'Python version for Conda environment'
+        default: 3.13
+        required: false
+        type: number
+
+jobs:
+  validate:
+    defaults:
+      run:
+        shell: bash -l {0}
+
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out project
+        uses: actions/checkout@v4
+
+      - name: Initialize miniconda
+        uses: conda-incubator/setup-miniconda@v3
+        with:
+          activate-environment: test
+          auto-update-conda: true
+          environment-file: environment.yml
+          auto-activate-base: false
+          python-version: ${{ inputs.python_version }}
+
+      - name: Conda config
+        run: >-
+          conda config --set always_yes yes
+          --set changeps1 no
+
+      - name: Install package and requirements
+        run: |
+          conda install --file requirements/conda.txt
+          conda install --file requirements/test.txt
+          python -m pip install . --no-deps
+
+      - name: Run unit tests
+        run: |
+          pytest --cov
+          coverage report -m
+          codecov
