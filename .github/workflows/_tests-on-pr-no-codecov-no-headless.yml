@@ -25,7 +25,6 @@ jobs:
         with:
           activate-environment: test
           auto-update-conda: true
-          environment-file: environment.yml
           auto-activate-base: false
           python-version: ${{ inputs.python_version }}
 
