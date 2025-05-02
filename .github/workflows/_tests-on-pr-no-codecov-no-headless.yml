@@ -24,8 +24,8 @@ jobs:
         uses: conda-incubator/setup-miniconda@v3
         with:
           activate-environment: test
+          channels: conda-forge
           auto-update-conda: true
-          environment-file: environment.yml
           auto-activate-base: false
           python-version: ${{ inputs.python_version }}
 

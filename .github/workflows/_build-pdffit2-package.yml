@@ -74,8 +74,8 @@ jobs:
         uses: conda-incubator/setup-miniconda@v3
         with:
           activate-environment: gsl
+          channels: conda-forge
           auto-update-conda: true
-          environment-file: environment.yml
           auto-activate-base: false
 
       - name: Windows install gsl
