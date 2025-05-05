@@ -3,7 +3,7 @@ name: Check release tag and user privilege for release
 on:
   workflow_call:
     inputs:
-      github_admin_username:
+      maintainer_github_username:
         description: 'GitHub admin authorized for GitHub/PyPI release'
         required: true
         type: string
@@ -29,11 +29,11 @@ jobs:
     steps:
       - name: Check user role
         run: |
-          if [ "${{ github.actor }}" != "${{ inputs.github_admin_username }}" ]; then
+          if [ "${{ github.actor }}" != "${{ inputs.maintainer_github_username }}" ]; then
             echo "Error: Unauthorized user."
-            echo "Only ${{ inputs.github_admin_username }} is authorized to release a package."
+            echo "Only ${{ inputs.maintainer_github_username }} is authorized to release a package."
             echo "This release process is currently requested by ${{ github.actor }}."
             echo "Please update .github/workflows/build-wheel-release-upload.yml by entering the GitHub username"
-            echo "of the authorized user in the 'github_admin_username' field."
+            echo "of the authorized user in the 'maintainer_github_username' field."
             exit 1
           fi
