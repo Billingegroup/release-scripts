@@ -30,7 +30,7 @@ jobs:
       - name: Check News Item
         run: |
           pip install PyGithub
-          wget https://raw.githubusercontent.com/Billingegroup/release-scripts/main/.github/workflows/check-news.py
+          wget https://raw.githubusercontent.com/scikit-package/release-scripts/main/.github/workflows/check-news.py
           python check-news.py
         env:
           PR_NUMBER: "${{ github.event.number }}"

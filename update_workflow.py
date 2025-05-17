@@ -27,7 +27,7 @@ proj = (
 
 pwd = os.path.dirname(__file__)
 
-CENTRAL_REPO_ORG = "Billingegroup"
+CENTRAL_REPO_ORG = "scikit-package"
 CENTRAL_REPO_NAME = "release-scripts"
 CENTRAL_WORKFLOW_DIR = ".github/workflows/templates"
 LOCAL_WORKFLOW_DIR = Path(pwd + "/../" + proj + "/.github/workflows")

@@ -65,7 +65,7 @@ jobs:
 
       - name: Update CHANGELOG.rst with the latest news
         run: |
-          wget https://raw.githubusercontent.com/Billingegroup/release-scripts/v0/.github/workflows/update-changelog.py
+          wget https://raw.githubusercontent.com/scikit-package/release-scripts/v0/.github/workflows/update-changelog.py
           python update-changelog.py "${{ github.ref_name }}"
           rm update-changelog.py
 
@@ -79,7 +79,7 @@ jobs:
     # For a full release, we delete and create a new tag to reflect the latest changes in the CHANGELOG.rst.
     # Recall that during the full release, the `main` branch's CHANGELOG.rst has been updated, and we want the
     # tag to reflect the latest changes in the CHANGELOG.rst done by the update-changelog above.
-    # For more discussions, please read https://github.com/Billingegroup/release-scripts/pull/120
+    # For more discussions, please read https://github.com/scikit-package/release-scripts/pull/120
     needs: [update-changelog]
     # Always run this job for a full release but fail if the update-changelog job previously failed.
     if: "always() && !contains(github.ref, 'rc')"
@@ -147,7 +147,7 @@ jobs:
           ref: main
       - name: Generate GH release notes for release
         run: |
-          wget https://raw.githubusercontent.com/Billingegroup/release-scripts/v0/.github/workflows/get-latest-changelog.py
+          wget https://raw.githubusercontent.com/scikit-package/release-scripts/v0/.github/workflows/get-latest-changelog.py
           python get-latest-changelog.py "${{ github.ref_name }}"
       - name: Release
         uses: softprops/action-gh-release@v2
